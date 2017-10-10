@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<meta charset="UTF-8">
+<title>Title of the document</title>
+</head>
+
+<body>
+
+<canvas id="myCanvas" width="0" height="0">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<img id="image2d" src="" style="display: none;"/>
+
+<form id="fileForm" class="fileForm">
+            <input id="fileInput" type="file" required="required" />
+            <button id="processButton" type="submit">Process</button>
+</form>
+
+
+
+<script>
+
+	
+$(document).ready(function(){
+    	
+	
+	$("#fileForm").submit(function(e) {
+       e.preventDefault();
+       
+       	var c = document.getElementById("myCanvas");
+		var ctx = c.getContext("2d");
+	
+       	var fileInput = document.getElementById('fileInput');       	
+		var fileList = fileInput.files;
+		var file = fileList[0];
+	
+		var reader = new FileReader();
+    	var img = document.getElementById('image2d');
+    
+    	reader.onload = function(){
+      		var dataURL = reader.result;
+      		img.src = dataURL;
+      		
+      		c.height = img.height;
+      		c.width = img.width;
+      		
+      		ctx.drawImage(img,0,0);
+    	};
+    
+    	reader.readAsDataURL(file);
+        
+    });
+    
+   
+    
+});    
+ 
+	
+
+
+</script>
+
+
+<!--
+<img src="test.jpg"/>
+-->
+</body>
+
+</html>
