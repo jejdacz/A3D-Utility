@@ -8,14 +8,33 @@
 		<title>Title of the document</title>
 	</head>
 	<body>
-		<form id="fileForm" class="fileForm">
-			<input id="fileInput" type="file" accept="image/*" required="required"/>			
+	
+		<form id="fileForm">
+			<fieldset>
+				<div class="form-group">
+					<input class="form-control" id="fileInput" type="file" accept="image/*" required="required"/>
+			</div>
+			</fieldset>
 		</form>
-		<div style="width:auto;">
+		
+		
+		<form id="controlsform">
+			<fieldset>
+				<div class="form-group">
+					<button id="test" type="button">Click Me!</button>
+					<button id="test2" type="button">Click Me2!</button>	
+				</div>
+			</fieldset>
+		</form>
+		
+		
+		<div style="width:auto;">			
 			<canvas id="canvas2d" width="0" height="0" style="border: 10px solid gray;">
 				Your browser does not support the HTML5 canvas tag.
 			</canvas>
-		</div>		
+		</div>
+		
+			
 		<script>
 				
 		</script>

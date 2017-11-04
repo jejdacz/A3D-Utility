@@ -10,14 +10,21 @@
 
 $(function(){
 			   	
+   	var imeControls = document.getElementById("imeControls");
+   	
    	var canvas2d = document.getElementById("canvas2d");
+   	var cont = canvas2d.getContext('2d');
 
    	var fileForm = document.getElementById("fileForm");
-   	var fileInput = document.getElementById("fileInput");       	
+   	var fileInput = document.getElementById("fileInput");
 		
 	var reader = new FileReader();
 		
 	var ime = new ImageEditor(canvas2d);
+	
+	$("#test").click(function() {ime.clear();});
+	
+	$("#test2").click(function() {cont.stroke();});
 						
 	fileForm.onsubmit = function(e) {e.preventDefault();}
 	
