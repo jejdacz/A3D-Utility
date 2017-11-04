@@ -1,154 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
-<meta charset="UTF-8">
-<title>Title of the document</title>
-</head>
-
-<body>
-
-<canvas id="myCanvas" width="0" height="0">
-Your browser does not support the HTML5 canvas tag.</canvas>
-
-<img id="image2d" src="" style="display: none;"/>
-
-<form id="fileForm" class="fileForm">
-            <input id="fileInput" type="file" required="required" />
-            <button id="processButton" type="submit">Process</button>
-</form>
-
-
-
-<script>
-var canvas2d = document.getElementById("myCanvas");
-/*** GRID ***/
-// on grid label click
-	// roll out grid settings panel
-	// on "show" enabled draw grid to canvas due to settings
-	// save settings
-	
-	
-	// settings:
-		// rows
-		// cols
-		// thickness
-		// show
-		
-class Grid {
-	constructor(rows, cols) {
-		this.rows = rows;
-		this.cols = cols;
-		this.line = 2.0;
-		this.enabled = true;
-		this.style = 'rgba(0, 0, 0, 0.75)';
-	}
-	
-	enable() {
-		this.enabled = true;		
-	}
-	
-	disable() {
-		this.enabled = false;		
-	}
-	
-	render(c) {		
-		// if enabled render
-		if (this.enabled) {
-						
-			// read canvas size and compute grid offset
-			var offsetX = Math.floor(c.width / this.cols);
-			var offsetY = Math.floor(c.height / this.rows);
-			
-			// get canvas context2D
-			var ctx = c.getContext("2d");
-			
-			// set cols
-			for (var i = 1; i < this.cols; i++) {				
-				ctx.moveTo(offsetX * i, 0);
-				ctx.lineTo(offsetX * i, c.height);										
-			}
-						
-			// set rows
-			for (var i = 1; i < this.rows; i++) {				
-				ctx.moveTo(0, offsetY * i);
-				ctx.lineTo(c.width, offsetY * i);										
-			}
-			
-			// draw to canvas
-			ctx.lineWidth = this.line;
-			ctx.strokeStyle = this.style;			
-			ctx.stroke();									
-		}
-		
-	}
-}
-		
-
-var g = new Grid(4, 4);
-
-
-
-
-/*** CROP ***/
-
-// enable listen for canvas click event
-	// on click		
-		// on drag draw rectangle
-		// on release
-			// create crop object with regions (selection only within canvas)
-			// disable crop rectangle
-			// display info panel with button ok and cancel
-	
-
-$(document).ready(function(){
-    	
-	
-	
-	$("#fileForm").submit(function(e) {
-       e.preventDefault();
-       
-       	var c = document.getElementById("myCanvas");
-		var ctx = canvas2d.getContext("2d");
-	
-       	var fileInput = document.getElementById('fileInput');       	
-		var fileList = fileInput.files;
-		var file = fileList[0];
-	
-		var reader = new FileReader();
-    	var img = document.getElementById('image2d');
-    
-    	reader.onload = function(){
-      		var dataURL = reader.result;
-      		img.src = dataURL;
-      		
-      		c.height = img.height;
-      		c.width = img.width;
-      		
-      		ctx.drawImage(img,0,0);
-    	};
-    
-    	reader.readAsDataURL(file);
-        
-    });
-    
-    
-    
-    
-   
-    
-});    
- 
-	
-
-
-</script>
-
-
-<!--
-<img src="test.jpg"/>
--->
-</body>
-
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script src="static/script.js"></script>
+		<script src="static/ime.js"></script>
+		<meta charset="UTF-8">
+		<title>Title of the document</title>
+	</head>
+	<body>
+		<form id="fileForm" class="fileForm">
+			<input id="fileInput" type="file" accept="image/*" required="required"/>			
+		</form>
+		<div style="width:auto;">
+			<canvas id="canvas2d" width="0" height="0" style="border: 10px solid gray;">
+				Your browser does not support the HTML5 canvas tag.
+			</canvas>
+		</div>		
+		<script>
+				
+		</script>
+	</body>
 </html>
