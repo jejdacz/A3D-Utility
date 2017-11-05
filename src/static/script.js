@@ -6,10 +6,9 @@
  * - 3d scene setup
  * - 3d file opening
  */
- 
 
 $(function(){
-			   	
+
    	var imeControls = document.getElementById("imeControls");
    	
    	
@@ -19,10 +18,8 @@ $(function(){
 		
 	var reader = new FileReader();
 		
-	var ime = new ImageEditor(canvas2d);
-	
-	
-						
+	var ime = new ImageEditor(canvas2d);	
+				
 	fileForm.onsubmit = function(e) {e.preventDefault();}
 	
 	// on file select				
