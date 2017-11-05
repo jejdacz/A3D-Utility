@@ -287,7 +287,7 @@
 			}
 			
 		}
-					
+		/* test */			
 					
 		class ImageEditor {
 			constructor(canvas) {
