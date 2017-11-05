@@ -214,15 +214,6 @@ class Meter {
 		this._onMouseDownAction = (x, y) => this._start(x, y);
 	}
 	
-	_reset() {
-		this._startPos.x = 0;
-		this._startPos.y = 0;
-		this._currentPos.x = 0;
-		this._currentPos.y = 0;					
-		this._drawable = false;
-		this._onMouseDownAction = (x, y) => this._start(x, y);
-	}
-	
 	_start(x, y) {					
 		console.log('mtr start');
 		this._startPos.x = x;
@@ -238,7 +229,7 @@ class Meter {
 		console.log('mtr finish');
 		this._drawable = false;
 		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));		
-		this._onMouseDownAction = (x, y) => this._start(x, y);		
+		this._onMouseDownAction = (x, y) => this._start(x, y);	
 	}
 	
 	enable() {
@@ -309,7 +300,7 @@ class ImageEditor {
 		this._controls = new Map();
 		this._eventListeners = new Map();
 										
-		this._image.onload = () => this._onImageLoad();	
+		this._image.onload = () => this.onImageLoad();
 						
 		this._canvas.addEventListener('mousedown', e => this._notifyListeners('mousedown', e));				
 		this._canvas.addEventListener('mouseup', e => this._notifyListeners('mouseup', e));
@@ -328,12 +319,6 @@ class ImageEditor {
 	
 	get canvas() { return this._canvas;}
 	get ctx() { return this._ctx;}
-	
-	_onImageLoad() {
-		this._canvas.height = this._image.height;
-		this._canvas.width = this._image.width;					
-		this.onChange(this);
-	}
 	
 	setImageSource(src) {
 		this._image.src = src;
@@ -369,10 +354,16 @@ class ImageEditor {
 	
 	}
 	
-	onChange(o) {
+	onImageLoad() {
+		this._canvas.height = this._image.height;
+		this._canvas.width = this._image.width;					
+		this.onChange(this);
+	}
+	
+	onChange(e) {
 		console.log('ime onchange');
 		this.draw();
-	}	
+	}
 	
 	/**
 	 * Draws objects on canvas.
