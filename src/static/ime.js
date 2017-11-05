@@ -285,6 +285,24 @@ class Meter {
 	}
 	
 }
+/**
+ * Toggle button.
+ */
+class ToggleButton {
+	constructor(callbackA, callbackB){
+		this.callbackA = () => callbackA;
+		this.callbackB = () => callbackB;
+		this._callback = () => callbackA;
+	}
+	
+	click() {
+		this._callback();
+		this.callbackA = this.callbackB;
+		this.callbackB = this._callback;
+		this._callback = this.callbackA;
+	}
+	
+}
 		
 /**
  * Image Editor.
@@ -380,6 +398,10 @@ class ImageEditor {
 	getControlsHTML() {
 	
 	}
+	
+	makeControls(type, name, callback) {
+		//"<button class=\"form-control\" type=\"button\">" + name + "</button>"	
+	}	
 	
 	/**
 	 * Draws objects on canvas.

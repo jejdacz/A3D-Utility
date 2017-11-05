@@ -18,7 +18,19 @@ $(function(){
 		
 	var reader = new FileReader();
 		
-	var ime = new ImageEditor(canvas2d);	
+	var ime = new ImageEditor(canvas2d);
+	
+	var f1 = function() {console.log('On');}
+	var f2 = function() {console.log('Off');}
+	
+	var tb = new ToggleButton(f1,f2);
+	
+	
+	$("#test").click(tb.click);
+	
+	var b = $().add('<button class=\"form-control\" type=\"button\">meter</button>').click(ime._tools.get('meter').disable);
+	
+	$("#controlsForm fieldset div.form-group").append(b);	
 				
 	fileForm.onsubmit = function(e) {e.preventDefault();}
 	
