@@ -178,231 +178,234 @@
 					console.log("X: " + e.offsetX);
 					console.log("Y: " + e.offsetY);
 				});*/
-				
-		class Meter {
-			constructor(ime) {								
-				
-				var _ime = ime;
-				var _startPoint = new Array(2);
-				var _currentPoint = new Array(2);
-				var _distance;
-				var _enabled = false;
-				var _drawable = false;
-				var _action = (x, y) => this.start(x, y);
-								
-				this.reset = function() {
-					_startPoint[0] = 0;
-					_startPoint[1] = 0;
-					_currentPoint[0] = 0;
-					_currentPoint[1] = 0;					
-					_drawable = false;
-					_action = (x, y) => this.start(x, y);
-				}
-				
-				this.getDistance = function(x, y) {
-					return Math.round(Math.sqrt(Math.pow(x - _startPoint[0], 2) + Math.pow(y - _startPoint[1], 2)));
-				}
-				
-				this.setStartPoint = function(x, y) {
-					_startPoint[0] = x;
-					_startPoint[1] = y;
-					this.onChange();
-				}
-				
-				this.setCurrentPoint = function(x, y) {
-					_currentPoint[0] = x;
-					_currentPoint[1] = y;
-					this.onChange();				
-				}
-				
-				this.getStartPoint = function() {return _startPoint;}
-				this.getCurrentPoint = function() {return _currentPoint;}			
-				
-				this.enable = function() {
-					_enabled = true;
-					_ime.addEventListener('mousedown', this, e => this.onMouseDown(e));
-				}
-				
-				this.disable = function() {
-					_enabled = false;
-					_ime.removeEventListener('mousedown', this, e => this.onMouseDown(e));
-					_ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));
-				}
-				
-				this.isEnabled = function() {return	_enabled;}
-				this.isDrawable = function() {return _drawable;}
-				
-				this.onChange = function() {
-					console.log('mtr onchange');
-					_ime.onChange(this);
-				}
-				
-				this.start = function(x, y) {					
-					this.setStartPoint(x, y);
-					this.setCurrentPoint(x, y);
-					_drawable = true;
-					_ime.addEventListener('mousemove', this, e => this.onMouseMove(e));
-					_action = (x, y) => this.finish(x, y);					
-				}
-				
-				this.finish = function(x, y) {
-					_drawable = false;
-					_ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));
-					this.onChange();
-					_action = (x, y) => this.start(x, y);
-				}
-				
-				this.getAction = function() {return _action;}
-				
-			}
+/**
+ * Point helper class.
+ */
+class Point {
+	constructor(x, y) {
+		this._x = x;
+		this._y = y;
+	}
+	
+	distance() {		
+		if (arguments.length == 1 && (arguments[0] instanceof Point)) {
+			return this._distance(arguments[0].x, arguments[0].y);
 			
-			onMouseDown(e) {
-				this.getAction()(e.offsetX, e.offsetY);
-			}
-			
-			onMouseMove(e) {				
-				console.log(this.getDistance(e.offsetX, e.offsetY));
-				this.setCurrentPoint(e.offsetX, e.offsetY);				
-			}
-			
-			draw(ctx) {
-				if (this.isDrawable()) {
-					var startPoint = this.getStartPoint();
-					var currentPoint = this.getCurrentPoint();
-					ctx.beginPath();					
-					ctx.moveTo(startPoint[0], startPoint[1]);
-					ctx.lineTo(currentPoint[0], currentPoint[1]);
-					ctx.closePath();
-					ctx.shadowOffsetX = 1;
-  					ctx.shadowOffsetY = 1;
-  					ctx.shadowBlur = 1;
-  					ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-					ctx.lineWidth = 3;
-					ctx.strokeStyle = 'rgba(255, 255, 0, 0.6)';					
-					ctx.stroke();
-					ctx.font = "16px Arial";
-					ctx.fillStyle = 'rgba(255, 255, 0, 1.0)';
-					ctx.fillText(this.getDistance(currentPoint[0], currentPoint[1]) + ' px', currentPoint[0], currentPoint[1]);
-				}
-			}
-			
+		} else if (arguments.length == 2) {
+			return this._distance(arguments[0], arguments[1]);
 		}
-		/* test */			
-					
-		class ImageEditor {
-			constructor(canvas) {
-				var _this = this;				
-				var _canvas = canvas;
-				this.canvas = canvas;
-				var _ctx = canvas.getContext('2d');
-				var _originalImage = new Image();
-				var _image = new Image();
-				var _helpers = new Map();
-				var _controls = new Map();
-				var _eventListeners = new Map();
-															
-				this.getCanvas = function() {return _canvas;}
-				this.getCtx = function() {return _ctx;}
-				this.getImage = function() {return _image;}
-				this.getEventListeners = function(e) {return _eventListeners.get(e);}
-				this.getHelpers = function() {return _helpers;}
+	}
+	
+	_distance(x, y) {
+		return Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
+	}	
+}		
 				
-				this.addEventListener = function(name, obj, func) {
-					if (this.getEventListeners(name)) {
-						this.getEventListeners(name).set(obj, func);
-					}
-				}
-				
-				this.removeEventListener = function(name, obj) {					
-					if (this.getEventListeners(name)) {
-						console.log(this.getEventListeners(name).delete(obj));
-					}
-				}								
-				
-				this.setImageSource = function(src) {_image.src = src;}
-												
-				_image.onload = function() {
-					_canvas.height = _image.height;
-					_canvas.width = _image.width;
-					_this.onChange(this);
-				}
-								
-				_canvas.addEventListener('mousedown', e => this.notifyListeners('mousedown', e));				
-				_canvas.addEventListener('mouseup', e => this.notifyListeners('mouseup', e));
-				_canvas.addEventListener('mousemove', e => this.notifyListeners('mousemove', e));
-				
-				_eventListeners.set('mousedown', new Map());
-				_eventListeners.set('mouseup', new Map());
-				_eventListeners.set('mousemove', new Map());
-				
-				var m = new Meter(this);
-				m.enable();				
-				
-				this.drm = function() {m.draw(_ctx);}
-				
-				_helpers.set('meter', m);
-								
-			}
-			
-			/**
-			 * Draws objects on canvas.
-			 */
-			draw() {
-	  			var ctx = this.canvas.getContext('2d');	  			
-	  			ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-	  			ctx.drawImage(this.getImage(),0,0);
-	  			this.getHelpers().forEach(helper => helper.draw(ctx));
-			}
-			
-			
-			/**
-			 * Returns HTML code for controls.
-			 */
-			controlsHTML() {
-			
-			}
-			
-			/**
-			 * Notify listeners about event.
-			 */			
-			notifyListeners(name, e) {
-				var listeners = this.getEventListeners(name);
-				if (listeners) {
-					listeners.forEach(func => func(e));
-				} else {
-					console.log('no listeners');					
-				}
-			}
-			
-			onChange(o) {
-				console.log('ime onchange');
-				this.draw();
-			}
-			
-			clear() {
-				var c = this.getCanvas();
-	  			var ctx = this.getCtx();
-	  			ctx.clearRect(0, 0, c.width, c.height);
-			}
-			
-					
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
+/**
+ * Distance meter.
+ */				
+class Meter {
+	constructor(ime) {
+		this._ime = ime;
+		this._startPos = new Point(0, 0);
+		this._currentPos = new Point(0, 0);		
+		this._enabled = false;
+		this._drawable = false;
+		this._onMouseDownAction = (x, y) => this._start(x, y);
+	}
+	
+	_reset() {
+		this._startPos.x = 0;
+		this._startPos.y = 0;
+		this._currentPos.x = 0;
+		this._currentPos.y = 0;					
+		this._drawable = false;
+		this._onMouseDownAction = (x, y) => this._start(x, y);
+	}
+	
+	_start(x, y) {					
+		console.log('mtr start');
+		this._startPos.x = x;
+		this._startPos.y = y;
+		this._currentPos.x = x;
+		this._currentPos.y = y;		
+		this._drawable = true;
+		this._ime.addEventListener('mousemove', this, e => this.onMouseMove(e));
+		this._onMouseDownAction = (x, y) => this._finish(x, y);			
+	}
+	
+	_finish(x, y) {
+		console.log('mtr finish');
+		this._drawable = false;
+		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));		
+		this._onMouseDownAction = (x, y) => this._start(x, y);		
+	}
+	
+	enable() {
+		this._enabled = true;
+		this._ime.addEventListener('mousedown', this, e => this.onMouseDown(e));
+	}
+	
+	disable() {
+		this._enabled = false;
+		this._ime.removeEventListener('mousedown', this, e => this.onMouseDown(e));
+		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));
+	}
+	
+	get enabled() {return this._enabled;}
+	get drawable() {return this._drawable;}
+		
+	
+	onMouseDown(e) {
+		this._onMouseDownAction(e.offsetX, e.offsetY);
+		this.onChange();
+	}
+	
+	onMouseMove(e) {			
+		this._currentPos.x = e.offsetX;
+		this._currentPos.y = e.offsetY;
+		console.log(this._startPos.distance(this._currentPos));
+		this.onChange();
+	}
+	
+	onChange() {
+		console.log('mtr onchange');
+		this._ime.onChange(this);
+	}
+	
+	draw() {
+		if (this._drawable) {		
+			this._ime.ctx.beginPath();
+			this._ime.ctx.moveTo(this._startPos.x, this._startPos.y);
+			this._ime.ctx.lineTo(this._currentPos.x, this._currentPos.y);
+			this._ime.ctx.closePath();
+			this._ime.ctx.shadowOffsetX = 1;
+			this._ime.ctx.shadowOffsetY = 1;
+			this._ime.ctx.shadowBlur = 1;
+			this._ime.ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+			this._ime.ctx.lineWidth = 3;
+			this._ime.ctx.strokeStyle = 'rgba(255, 255, 0, 0.6)';					
+			this._ime.ctx.stroke();
+			this._ime.ctx.font = "16px Arial";
+			this._ime.ctx.fillStyle = 'rgba(255, 255, 0, 1.0)';
+			this._ime.ctx.fillText(Math.round(this._startPos.distance(this._currentPos)) + ' px', this._currentPos.x, this._currentPos.y);
+			console.log('meter drawing');
 		}
+	}
+	
+}
+		
+/**
+ * Image Editor.
+ */			
+			
+class ImageEditor {
+	constructor(canvas) {				
+		this._canvas = canvas;
+		this._ctx = canvas.getContext('2d');
+		this._originalImage = new Image();
+		this._image = new Image();
+		this._helpers = new Map();
+		this._controls = new Map();
+		this._eventListeners = new Map();
+										
+		this._image.onload = () => this._onImageLoad();	
+						
+		this._canvas.addEventListener('mousedown', e => this._notifyListeners('mousedown', e));				
+		this._canvas.addEventListener('mouseup', e => this._notifyListeners('mouseup', e));
+		this._canvas.addEventListener('mousemove', e => this._notifyListeners('mousemove', e));
+		
+		this._eventListeners.set('mousedown', new Map());
+		this._eventListeners.set('mouseup', new Map());
+		this._eventListeners.set('mousemove', new Map());
+				
+		var m = new Meter(this);
+		m.enable();	
+		
+		this._helpers.set('meter', m);
+						
+	}
+	
+	get canvas() { return this._canvas;}
+	get ctx() { return this._ctx;}
+	
+	_onImageLoad() {
+		this._canvas.height = this._image.height;
+		this._canvas.width = this._image.width;					
+		this.onChange(this);
+	}
+	
+	setImageSource(src) {
+		this._image.src = src;
+	}
+	
+	addEventListener(name, obj, func) {
+		if (this._eventListeners.get(name)) {
+			this._eventListeners.get(name).set(obj, func);
+		}
+	}
+		
+	removeEventListener(name, obj) {					
+		if (this._eventListeners.get(name)) {
+			console.log(this._eventListeners.get(name).delete(obj));
+		}
+	}
+	
+	/**
+	 * Notify listeners about event.
+	 */			
+	_notifyListeners(name, e) {				
+		if (this._eventListeners.get(name)) {
+			this._eventListeners.get(name).forEach(func => func(e));
+		} else {
+			console.log('no listeners');					
+		}
+	}
+	
+	/**
+	 * Returns HTML code for controls.
+	 */
+	controlsHTML() {
+	
+	}
+	
+	onChange(o) {
+		console.log('ime onchange');
+		this.draw();
+	}	
+	
+	/**
+	 * Draws objects on canvas.
+	 */
+	draw() {	  				  			
+		this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+		this._ctx.drawImage(this._image,0,0);
+		this._helpers.forEach(helper => helper.draw());		
+	}
+	
+	
+	
+	
+	
+	
+			
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}
