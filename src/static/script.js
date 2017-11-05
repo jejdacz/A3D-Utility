@@ -6,10 +6,9 @@
  * - 3d scene setup
  * - 3d file opening
  */
- 
 
 $(function(){
-			   	
+
    	var imeControls = document.getElementById("imeControls");
    	
    	var canvas2d = document.getElementById("canvas2d");
@@ -24,7 +23,7 @@ $(function(){
 	
 	$("#test").click(function() {ime.clear();});
 	
-	$("#test2").click(function() {cont.stroke();});
+	$("#test2").click(function() {console.log(t._prop());});
 						
 	fileForm.onsubmit = function(e) {e.preventDefault();}
 	

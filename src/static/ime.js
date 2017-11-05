@@ -1,4 +1,4 @@
-//import {Point} from 'resource://gre/modules/Geometry.jsm';
+//import {Test} from 'test.js';
 /*** GRID  ***/
 		// on grid label click
 			// roll out grid settings panel
