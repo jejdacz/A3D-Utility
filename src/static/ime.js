@@ -290,9 +290,9 @@ class Meter {
  */
 class ToggleButton {
 	constructor(callbackA, callbackB){
-		this.callbackA = () => callbackA;
-		this.callbackB = () => callbackB;
-		this._callback = () => callbackA;
+		this.callbackA = callbackA;
+		this.callbackB = callbackB;
+		this._callback = callbackA;
 	}
 	
 	click() {
@@ -391,17 +391,6 @@ class ImageEditor {
 		console.log('ime onchange');
 		this.draw();
 	}
-	
-	/**
-	 * Returns HTML code for controls.
-	 */
-	getControlsHTML() {
-	
-	}
-	
-	makeControls(type, name, callback) {
-		//"<button class=\"form-control\" type=\"button\">" + name + "</button>"	
-	}	
 	
 	/**
 	 * Draws objects on canvas.

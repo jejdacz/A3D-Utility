@@ -25,8 +25,34 @@ $(function(){
 	
 	var tb = new ToggleButton(f1,f2);
 	
-	
-	$("#test").click(tb.click);
+	// TODO factory helper class for buttons and controls
+	// build tools helpers and controls outside IME
+	/*
+		var m = new Meter(ime);
+		
+		VER1:
+		var mtb = new ToggleButton(m.enable, m.disable);
+		
+		$("#button").click(function () {
+		var r = mtb.click();
+		if (r) add style-class on else off				
+		});
+		
+		********************
+		
+		VER2:
+		var mtb = new ToggleButton(m.enable, m.disable); //configure element inside
+		$("#controlsForm fieldset div.form-group").append(mtb.toHTML());
+		// user can specify additional CSS ... like bootstrap classes
+		// <button class=\"on\" type=\"button\">meter</button>
+		
+		*****************
+				
+		ime.addTool('meter', m);
+		ime.addControl('meter', mtb);
+	*/
+		
+	$("#test").click(function () {tb.click();});
 	
 	var b = $().add('<button class=\"form-control\" type=\"button\">meter</button>').click(ime._tools.get('meter').disable);
 	
