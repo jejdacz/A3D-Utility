@@ -11,7 +11,7 @@ $(function(){
 
    	var imeControls = document.getElementById("imeControls");
    	
-   	
+   	var canvas2d = document.getElementById("canvas2d");
 
    	var fileForm = document.getElementById("fileForm");
    	var fileInput = document.getElementById("fileInput");

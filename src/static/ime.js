@@ -202,7 +202,7 @@ class Point {
 }		
 				
 /**
- * Distance meter.
+ * Distance meter tool.
  */				
 class Meter {
 	constructor(ime) {
@@ -294,10 +294,12 @@ class ImageEditor {
 	constructor(canvas) {				
 		this._canvas = canvas;
 		this._ctx = canvas.getContext('2d');
-		this._originalImage = new Image();
-		this._image = new Image();
-		this._helpers = new Map();
-		this._controls = new Map();
+		this._originalImage = new Image(); // backup for undo
+		this._image = new Image(); // image to edit
+		this._helpers = new Map(); // multiple helpers can be active at once
+		this._tools = new Map(); // only one tool can be active at the moment
+		this._activeTool = null;
+		this._controls = new Map(); // controls for tools and helpers
 		this._eventListeners = new Map();
 										
 		this._image.onload = () => this.onImageLoad();
@@ -310,10 +312,11 @@ class ImageEditor {
 		this._eventListeners.set('mouseup', new Map());
 		this._eventListeners.set('mousemove', new Map());
 				
-		var m = new Meter(this);
-		m.enable();	
+		var m = new Meter(this);		
 		
-		this._helpers.set('meter', m);
+		this._tools.set('meter', m);
+		
+		this.ativateTool('meter');
 						
 	}
 	
@@ -323,6 +326,19 @@ class ImageEditor {
 	setImageSource(src) {
 		this._image.src = src;
 	}
+	
+	ativateTool(name) {
+		// disable currently active tool
+		if (this._activeTool != null) {
+			this._activeTool.disable();
+			this._activeTool = null;
+		}		
+		// ensure tool exists then activate it
+		if (this._tools.get(name)) {
+			this._activeTool = this._tools.get(name);
+			this._activeTool.enable();
+		}
+	}	
 	
 	addEventListener(name, obj, func) {
 		if (this._eventListeners.get(name)) {
@@ -334,26 +350,19 @@ class ImageEditor {
 		if (this._eventListeners.get(name)) {
 			console.log(this._eventListeners.get(name).delete(obj));
 		}
-	}
-	
-	/**
-	 * Notify listeners about event.
-	 */			
+	}	
+				
 	_notifyListeners(name, e) {				
 		if (this._eventListeners.get(name)) {
 			this._eventListeners.get(name).forEach(func => func(e));
 		} else {
 			console.log('no listeners');					
 		}
-	}
+	}	
 	
 	/**
-	 * Returns HTML code for controls.
-	 */
-	controlsHTML() {
-	
-	}
-	
+	 * Events handling.
+	 */	 	
 	onImageLoad() {
 		this._canvas.height = this._image.height;
 		this._canvas.width = this._image.width;					
@@ -366,12 +375,20 @@ class ImageEditor {
 	}
 	
 	/**
+	 * Returns HTML code for controls.
+	 */
+	getControlsHTML() {
+	
+	}
+	
+	/**
 	 * Draws objects on canvas.
 	 */
 	draw() {	  				  			
 		this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
 		this._ctx.drawImage(this._image,0,0);
-		this._helpers.forEach(helper => helper.draw());		
+		this._helpers.forEach(helper => helper.draw());
+		if (this._activeTool != null) this._activeTool.draw();
 	}
 	
 	
