@@ -216,6 +216,7 @@ class Meter {
 	
 	_start(x, y) {					
 		console.log('mtr start');
+		this._ime.disableControls();
 		this._startPos.x = x;
 		this._startPos.y = y;
 		this._currentPos.x = x;
@@ -227,17 +228,20 @@ class Meter {
 	
 	_finish(x, y) {
 		console.log('mtr finish');
+		this._ime.enableControls();
 		this._drawable = false;
 		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));		
 		this._onMouseDownAction = (x, y) => this._start(x, y);	
 	}
 	
 	enable() {
+		console.log('meter enabled');
 		this._enabled = true;
-		this._ime.addEventListener('mousedown', this, e => this.onMouseDown(e));
+		this._ime.addEventListener('mousedown', this, e => this.onMouseDown(e));		
 	}
 	
 	disable() {
+		console.log('meter disabled');
 		this._enabled = false;
 		this._ime.removeEventListener('mousedown', this, e => this.onMouseDown(e));
 		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));
@@ -316,8 +320,7 @@ class ImageEditor {
 		this._image = new Image(); // image to edit
 		this._helpers = new Map(); // multiple helpers can be active at once
 		this._tools = new Map(); // only one tool can be active at the moment
-		this._activeTool = null;
-		this._controls = new Map(); // controls for tools and helpers
+		this._activeTool = null;		
 		this._eventListeners = new Map();
 										
 		this._image.onload = () => this.onImageLoad();
@@ -329,13 +332,15 @@ class ImageEditor {
 		this._eventListeners.set('mousedown', new Map());
 		this._eventListeners.set('mouseup', new Map());
 		this._eventListeners.set('mousemove', new Map());
-				
-		var m = new Meter(this);		
+		this._eventListeners.set('enablecontrols', new Map());
+		this._eventListeners.set('disablecontrols', new Map());
 		
-		this._tools.set('meter', m);
+		// controls on/off callbacks  *** can be done by events
+		this.enableControls = function(){this._notifyListeners('enablecontrols', e)}; // ?event obj
+		this.disableControls = function(){};
 		
-		this.ativateTool('meter');
-						
+		this.enableUndoControl = function(){};
+		this.disableUndoControl = function(){};
 	}
 	
 	get canvas() { return this._canvas;}
@@ -344,8 +349,9 @@ class ImageEditor {
 	setImageSource(src) {
 		this._image.src = src;
 	}
-	
-	ativateTool(name) {
+		
+	selectTool(name) {
+		console.log('selecting tool ' + name);
 		// disable currently active tool
 		if (this._activeTool != null) {
 			this._activeTool.disable();

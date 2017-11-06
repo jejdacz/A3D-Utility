@@ -17,16 +17,37 @@ $(function(){
    	var fileInput = document.getElementById("fileInput");
 		
 	var reader = new FileReader();
+	
+	/*** IME INIT ***/
 		
 	var ime = new ImageEditor(canvas2d);
 	
-	var f1 = function() {console.log('On');}
-	var f2 = function() {console.log('Off');}
+	/* move to factory method later? */
+	var m = new Meter(ime);
+	ime._tools.set('meter', m);
+	var tb = new ToggleButton(() => ime.selectTool('meter'), () => ime.selectTool(null));
 	
-	var tb = new ToggleButton(f1,f2);
+	$("#meter").click(function () {
+		tb.click();
+		$(this).toggleClass('active');
+	});
+	
+	// enable controls IME callback
+	ime.enableControls = function(){
+		console.log('controls.enabled');
+		$("#meter, #test2").prop('disabled', false);		
+	}
+	
+	// disable controls IME callback
+	ime.disableControls = function(){
+		console.log('controls disabled');
+		$("#meter, #test2").prop('disabled', true);
+	}
+	
 	
 	// TODO factory helper class for buttons and controls
-	// build tools helpers and controls outside IME
+	// build (configure) tools helpers and controls outside IME
+	// editorInitFunction
 	/*
 		var m = new Meter(ime);
 		
@@ -46,17 +67,23 @@ $(function(){
 		// user can specify additional CSS ... like bootstrap classes
 		// <button class=\"on\" type=\"button\">meter</button>
 		
+		$('.btn').click(function() {
+    		$(this).toggleClass('active');
+		});
+		
 		*****************
+		user specifies controls on its own ... for similar problems can use factory methods
+		
 				
 		ime.addTool('meter', m);
-		ime.addControl('meter', mtb);
+		ime.addControl('meterButton', mtb);
 	*/
-		
+	/*	
 	$("#test").click(function () {tb.click();});
 	
 	var b = $().add('<button class=\"form-control\" type=\"button\">meter</button>').click(ime._tools.get('meter').disable);
 	
-	$("#controlsForm fieldset div.form-group").append(b);	
+	$("#controlsForm fieldset div.form-group").append(b);*/	
 				
 	fileForm.onsubmit = function(e) {e.preventDefault();}
 	
