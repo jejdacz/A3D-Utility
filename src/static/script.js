@@ -18,72 +18,82 @@ $(function(){
 		
 	var reader = new FileReader();
 	
-	/*** IME INIT ***/
+	/*** IME CONTROLS INIT ***/
 		
 	var ime = new ImageEditor(canvas2d);
 	
 	/* move to factory method later? */
-	var m = new Meter(ime);
-	ime._tools.set('meter', m);
-	var tb = new ToggleButton(() => ime.selectTool('meter'), () => ime.selectTool(null));
+	/*
+	var m = new Meter(ime);	
+	ime._tools.set("meter", m);	
+	var tb = new ToggleButton();
+	
+	tb.onActivate = () => {ime.selectTool("meter"); $("#meter").addClass("active");};
+	tb.onDeactivate = () => {$("#meter").removeClass("active");};
+	
+	tb.onEnable = () => $("#meter").prop("disabled", false);
+	tb.onDisable = () => $("#meter").prop("disabled", true);
+	
+	ime.addEventListener("ondeactivatecontrols", tb, () => tb.deactivate());
+	ime.addEventListener("onenablecontrols", tb, () => tb.enable());
+	ime.addEventListener("ondisablecontrols", tb, () => tb.disable());
 	
 	$("#meter").click(function () {
 		tb.click();
-		$(this).toggleClass('active');
-	});
+	});*/
 	
-	// enable controls IME callback
-	ime.enableControls = function(){
-		console.log('controls.enabled');
-		$("#meter, #test2").prop('disabled', false);		
-	}
+	createToggleButtonControl("id1", ime, "Meter").appendTo("#controlsForm fieldset div.form-group");
+	createToggleButtonControl("id2", ime, "Meter").appendTo("#controlsForm fieldset div.form-group");
 	
-	// disable controls IME callback
-	ime.disableControls = function(){
-		console.log('controls disabled');
-		$("#meter, #test2").prop('disabled', true);
-	}
+	/*** IME INIT ***/
 	
-	
+	ime.disableControls();  // ime.init()
+		
 	// TODO factory helper class for buttons and controls
 	// build (configure) tools helpers and controls outside IME
 	// editorInitFunction
-	/*
-		var m = new Meter(ime);
+	
+	function createToggleButtonControl(id, ime, tool) {
+		switch (tool) {
+			case ("Meter"):
+				var t = new Meter(ime);				
+				break;
+		}
 		
-		VER1:
-		var mtb = new ToggleButton(m.enable, m.disable);
-		
-		$("#button").click(function () {
-		var r = mtb.click();
-		if (r) add style-class on else off				
-		});
-		
-		********************
-		
-		VER2:
-		var mtb = new ToggleButton(m.enable, m.disable); //configure element inside
-		$("#controlsForm fieldset div.form-group").append(mtb.toHTML());
-		// user can specify additional CSS ... like bootstrap classes
-		// <button class=\"on\" type=\"button\">meter</button>
-		
-		$('.btn').click(function() {
-    		$(this).toggleClass('active');
-		});
-		
-		*****************
-		user specifies controls on its own ... for similar problems can use factory methods
-		
+		ime._tools.set(t, t);
 				
-		ime.addTool('meter', m);
-		ime.addControl('meterButton', mtb);
-	*/
-	/*	
-	$("#test").click(function () {tb.click();});
+		var button = $("<button>", {class: "form-control", type: "button", id: id, text: tool});
+				
+		let tb = new ToggleButton();
+		
+		ime._controls.set(tb, tb);
 	
-	var b = $().add('<button class=\"form-control\" type=\"button\">meter</button>').click(ime._tools.get('meter').disable);
+		tb.onActivate = () => {
+				ime.deactivateControls(t);
+				ime.selectTool(t);				
+				ime.addEventListener("ondeactivatecontrols", tb, () => tb.deactivate());
+				button.addClass("active");
+			};
+		
+		tb.onDeactivate = () => {
+				ime.removeEventListener("ondeactivatecontrols", tb, () => tb.deactivate());
+				ime.selectTool(null);
+				button.removeClass("active");				
+			};
 	
-	$("#controlsForm fieldset div.form-group").append(b);*/	
+		tb.onEnable = () => button.prop("disabled", false);
+		tb.onDisable = () => button.prop("disabled", true);	
+		
+		ime.addEventListener("onenablecontrols", tb, () => tb.enable());
+		ime.addEventListener("ondisablecontrols", tb, () => tb.disable());
+	
+		button.click(function () {
+			tb.click();
+		});
+		
+		return button;
+	}
+		
 				
 	fileForm.onsubmit = function(e) {e.preventDefault();}
 	

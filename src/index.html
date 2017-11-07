@@ -6,7 +6,12 @@
 		<script src="static/ime.js"></script>
 		<meta charset="UTF-8">
 		<title>Title of the document</title>
-	</head>	
+	</head>
+	<style>
+	.active {
+	color: red;
+	}
+	</style>	
 	<body style="background-color: darkgray;">
 	
 		<form id="fileForm">
@@ -20,16 +25,14 @@
 		
 		<form id="controlsForm">
 			<fieldset>
-				<div class="form-group">
-					<button id="meter" type="button" class="form-control">meter</button>
-					<button id="test2" type="button">Click Me2!</button>	
+				<div class="form-group">						
 				</div>
 			</fieldset>
 		</form>
 		
 		
 		<div style="width:auto;">			
-			<canvas id="canvas2d" width="0" height="0" style="border: 10px solid gray;">
+			<canvas id="canvas2d" width="0" height="0">
 				Your browser does not support the HTML5 canvas tag.
 			</canvas>
 		</div>

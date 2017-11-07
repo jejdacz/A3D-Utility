@@ -211,12 +211,12 @@ class Meter {
 		this._currentPos = new Point(0, 0);		
 		this._enabled = false;
 		this._drawable = false;
-		this._onMouseDownAction = (x, y) => this._start(x, y);
+		this._onMouseDownAction = (x, y) => this._start(x, y);		
 	}
 	
 	_start(x, y) {					
 		console.log('mtr start');
-		this._ime.disableControls();
+		this._ime.disableControls(this);
 		this._startPos.x = x;
 		this._startPos.y = y;
 		this._currentPos.x = x;
@@ -228,23 +228,24 @@ class Meter {
 	
 	_finish(x, y) {
 		console.log('mtr finish');
-		this._ime.enableControls();
-		this._drawable = false;
-		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));		
+		this._ime.enableControls(this);
+		this._drawable = false;				
 		this._onMouseDownAction = (x, y) => this._start(x, y);	
+		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));
 	}
 	
 	enable() {
 		console.log('meter enabled');
-		this._enabled = true;
+		this._enabled = true;		
 		this._ime.addEventListener('mousedown', this, e => this.onMouseDown(e));		
 	}
 	
 	disable() {
 		console.log('meter disabled');
-		this._enabled = false;
+		this._enabled = false;		
 		this._ime.removeEventListener('mousedown', this, e => this.onMouseDown(e));
 		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));
+		this._onMouseDownAction = (x, y) => this._start(x, y);
 	}
 	
 	get enabled() {return this._enabled;}
@@ -264,7 +265,7 @@ class Meter {
 	}
 	
 	onChange() {
-		console.log('mtr onchange');
+		console.log('mtr onchange');		
 		this._ime.onChange(this);
 	}
 	
@@ -293,19 +294,54 @@ class Meter {
  * Toggle button.
  */
 class ToggleButton {
-	constructor(callbackA, callbackB){
-		this.callbackA = callbackA;
-		this.callbackB = callbackB;
-		this._callback = callbackA;
+	constructor(){		
+		this._activated = false;
+		this._enabled = true;
+		this._onEnableCallback = function(){};
+		this._onDisableCallback = function(){};
+		this._onActivateCallback = function(){};
+		this._onDeactivateCallback = function(){};
 	}
+	
+	set onEnable(c) {this._onEnableCallback = c;}	
+	set onDisable(c) {this._onDisableCallback = c;}	
+	set onActivate(c) {this._onActivateCallback = c;}	
+	set onDeactivate(c) {this._onDeactivateCallback = c;}
 	
 	click() {
-		this._callback();
-		this.callbackA = this.callbackB;
-		this.callbackB = this._callback;
-		this._callback = this.callbackA;
+		console.log('tb clicked');
+		if (this._enabled) {
+			if (this._activated) {
+				this.deactivate();
+			} else {
+				this.activate();
+			}
+		}
 	}
 	
+	enable() {
+		console.log('tb enabled');
+		this._enabled = true;
+		this._onEnableCallback();
+	}
+	
+	disable() {
+		console.log('tb disabled');
+		this._enabled = false;
+		this._onDisableCallback();
+	}
+	
+	activate() {
+		console.log('tb activated');
+		this._activated = true;
+		this._onActivateCallback();		
+	}
+	
+	deactivate() {
+		console.log('tb deactivated');
+		this._activated = false;
+		this._onDeactivateCallback();
+	}	
 }
 		
 /**
@@ -320,6 +356,7 @@ class ImageEditor {
 		this._image = new Image(); // image to edit
 		this._helpers = new Map(); // multiple helpers can be active at once
 		this._tools = new Map(); // only one tool can be active at the moment
+		this._controls = new Map();
 		this._activeTool = null;		
 		this._eventListeners = new Map();
 										
@@ -328,30 +365,18 @@ class ImageEditor {
 		this._canvas.addEventListener('mousedown', e => this._notifyListeners('mousedown', e));				
 		this._canvas.addEventListener('mouseup', e => this._notifyListeners('mouseup', e));
 		this._canvas.addEventListener('mousemove', e => this._notifyListeners('mousemove', e));
-		
-		this._eventListeners.set('mousedown', new Map());
-		this._eventListeners.set('mouseup', new Map());
-		this._eventListeners.set('mousemove', new Map());
-		this._eventListeners.set('enablecontrols', new Map());
-		this._eventListeners.set('disablecontrols', new Map());
-		
-		// controls on/off callbacks  *** can be done by events
-		this.enableControls = function(){this._notifyListeners('enablecontrols', e)}; // ?event obj
-		this.disableControls = function(){};
-		
-		this.enableUndoControl = function(){};
-		this.disableUndoControl = function(){};
 	}
 	
 	get canvas() { return this._canvas;}
-	get ctx() { return this._ctx;}
+	get ctx() { return this._ctx;}	
+	
 	
 	setImageSource(src) {
-		this._image.src = src;
+		this._image.src = src;		
 	}
 		
 	selectTool(name) {
-		console.log('selecting tool ' + name);
+		console.log('selecting tool ' + name);		
 		// disable currently active tool
 		if (this._activeTool != null) {
 			this._activeTool.disable();
@@ -362,22 +387,33 @@ class ImageEditor {
 			this._activeTool = this._tools.get(name);
 			this._activeTool.enable();
 		}
-	}	
+	}
 	
+	/**
+	 * Event listeners handling.
+	 */	
 	addEventListener(name, obj, func) {
 		if (this._eventListeners.get(name)) {
+			console.log('adding ' + name +' listener');
+			this._eventListeners.get(name).set(obj, func);
+		} else {
+			console.log('creating ' + name +' listener group');
+			console.log('adding ' + name +' listener');
+			this._eventListeners.set(name, new Map());
 			this._eventListeners.get(name).set(obj, func);
 		}
 	}
 		
 	removeEventListener(name, obj) {					
 		if (this._eventListeners.get(name)) {
-			console.log(this._eventListeners.get(name).delete(obj));
+			console.log('removing ' + name +' listener');
+			this._eventListeners.get(name).delete(obj);
 		}
 	}	
 				
 	_notifyListeners(name, e) {				
 		if (this._eventListeners.get(name)) {
+			console.log('notifying ' + name +' listeners');
 			this._eventListeners.get(name).forEach(func => func(e));
 		} else {
 			console.log('no listeners');					
@@ -389,7 +425,10 @@ class ImageEditor {
 	 */	 	
 	onImageLoad() {
 		this._canvas.height = this._image.height;
-		this._canvas.width = this._image.width;					
+		this._canvas.width = this._image.width;
+		this.selectTool(null);
+		this.deactivateControls(this);
+		this.enableControls();		
 		this.onChange(this);
 	}
 	
@@ -407,6 +446,21 @@ class ImageEditor {
 		this._helpers.forEach(helper => helper.draw());
 		if (this._activeTool != null) this._activeTool.draw();
 	}
+	
+	/**
+	 * Controls events.
+	 */
+	enableControls(e) {
+		this._notifyListeners('onenablecontrols', e)
+	}
+	
+	disableControls(e) {
+		this._notifyListeners('ondisablecontrols', e)
+	}
+	
+	deactivateControls(e) {		
+		this._notifyListeners('ondeactivatecontrols', e)
+	}	
 	
 	
 	
