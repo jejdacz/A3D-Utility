@@ -199,18 +199,59 @@ class Point {
 	_distance(x, y) {
 		return Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
 	}	
+}
+
+class ToolBase {
+	constructor() {				
+		this._active = false;
+		this._drawable = false;
+	}	
+	
+	get active() {return this._active;}
+	get drawable() {return this._drawable;}
+		
+	// *** order of code is critical
+	activate() {
+		if (this._active == true) {
+			console.warn('Activating active tool!');
+		}
+		//this._ime.selectTool(this);  ??? select ttol directly via ime ???
+		this.onActivate();
+		this._active = true;
+	}
+	
+	deactivate() {
+		if (this._active == false) {
+			console.warn('Deactivating non-active tool!');
+		}
+		this.onDeactivate();
+		this._active = false;
+	}
+	
+	draw() {}
+}
+
+/**
+ * Empty tool.
+ */
+class NullTool extends ToolBase {
+	constructor() {
+		super();
+	}
+	
+	onActivate(){}
+	onDeactivate(){}
 }		
 				
 /**
  * Distance meter tool.
  */				
-class Meter {
+class Meter extends ToolBase {
 	constructor(ime) {
+		super();
 		this._ime = ime;
 		this._startPos = new Point(0, 0);
-		this._currentPos = new Point(0, 0);		
-		this._enabled = false;
-		this._drawable = false;
+		this._currentPos = new Point(0, 0);
 		this._onMouseDownAction = (x, y) => this._start(x, y);		
 	}
 	
@@ -234,23 +275,17 @@ class Meter {
 		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));
 	}
 	
-	enable() {
-		console.log('meter enabled');
-		this._enabled = true;		
+	onActivate() {
+		console.log('meter activate');				
 		this._ime.addEventListener('mousedown', this, e => this.onMouseDown(e));		
 	}
 	
-	disable() {
-		console.log('meter disabled');
-		this._enabled = false;		
+	onDeactivate() {
+		console.log('meter deactivate');			
 		this._ime.removeEventListener('mousedown', this, e => this.onMouseDown(e));
 		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));
 		this._onMouseDownAction = (x, y) => this._start(x, y);
 	}
-	
-	get enabled() {return this._enabled;}
-	get drawable() {return this._drawable;}
-		
 	
 	onMouseDown(e) {
 		this._onMouseDownAction(e.offsetX, e.offsetY);
@@ -270,7 +305,7 @@ class Meter {
 	}
 	
 	draw() {
-		if (this._drawable) {		
+		if (this.drawable) {		
 			this._ime.ctx.beginPath();
 			this._ime.ctx.moveTo(this._startPos.x, this._startPos.y);
 			this._ime.ctx.lineTo(this._currentPos.x, this._currentPos.y);
@@ -356,9 +391,9 @@ class ImageEditor {
 		this._image = new Image(); // image to edit
 		this._helpers = new Map(); // multiple helpers can be active at once
 		this._tools = new Map(); // only one tool can be active at the moment
-		this._controls = new Map();
-		this._activeTool = null;		
-		this._eventListeners = new Map();
+		this._activeTool = null;
+		this._eventListeners = new Map();		
+		this._controls = new Map();				
 										
 		this._image.onload = () => this.onImageLoad();
 						
@@ -375,17 +410,38 @@ class ImageEditor {
 		this._image.src = src;		
 	}
 		
-	selectTool(name) {
-		console.log('selecting tool ' + name);		
-		// disable currently active tool
-		if (this._activeTool != null) {
-			this._activeTool.disable();
+	selectTool(tool) {
+		console.log('selecting tool ' + tool);
+		// ensure tool exists
+		if (this._tools.get(tool) == false) {
+			throw 'Tool does not exist!';
+		}
+				
+		// disable currently active tool if any		
+		if (this._activeTool != null) this.deselectTool();
+				
+		// activate selected tool
+		this._activeTool = this._tools.get(tool);
+		this._activeTool.activate();
+		
+	}
+	
+	deselectTool() {
+		console.log('deselecting active tool');
+		if (this._activeTool == null) {
+			console.warn('No tool!');
+		} else {
+			this._activeTool.deactivate();
 			this._activeTool = null;
-		}		
-		// ensure tool exists then activate it
-		if (this._tools.get(name)) {
-			this._activeTool = this._tools.get(name);
-			this._activeTool.enable();
+		}
+	}
+	
+	deactivateTool() {
+		console.log('deactivating active tool');
+		if (this.activeTool != null) {
+			this._activeTool.deactivate();  /// how to notify controls??
+		} else {
+			console.warn('No tool!');
 		}
 	}
 	
@@ -426,7 +482,7 @@ class ImageEditor {
 	onImageLoad() {
 		this._canvas.height = this._image.height;
 		this._canvas.width = this._image.width;
-		this.selectTool(null);
+		this.deselectTool();
 		this.deactivateControls(this);
 		this.enableControls();		
 		this.onChange(this);

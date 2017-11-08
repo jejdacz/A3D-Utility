@@ -77,7 +77,7 @@ $(function(){
 		
 		tb.onDeactivate = () => {
 				ime.removeEventListener("ondeactivatecontrols", tb, () => tb.deactivate());
-				ime.selectTool(null);
+				ime.deselectTool();
 				button.removeClass("active");				
 			};
 	
