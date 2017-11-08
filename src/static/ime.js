@@ -204,24 +204,17 @@ class Point {
 class ToolBase {
 	constructor() {				
 		this._active = false;
-		this._drawable = false;
-		this._onActivateCallback = function(){};
-		this._onDeactivateCallback = function(){};
+		this._drawable = false;		
 	}		
 	
 	get active() {return this._active;}
 	get drawable() {return this._drawable;}
-	
-	set onActivateCallback(c) {this._onActivateCallback = c;}	
-	set onDeactivateCallback(c) {this._onDeactivateCallback = c;}
-		
+			
 	// *** order of code is critical
 	activate() {
 		if (this._active == true) {
 			console.warn('Activating active tool!');
-		}
-		//this._ime.selectTool(this);  ??? select ttol directly via ime ???
-		this._onActivateCallback();
+		}		
 		this.onActivate();
 		this._active = true;		
 	}
@@ -229,8 +222,7 @@ class ToolBase {
 	deactivate() {
 		if (this._active == false) {
 			console.warn('Deactivating non-active tool!');
-		}
-		this._onDeactivateCallback();
+		}		
 		this.onDeactivate();
 		this._active = false;		
 	}
@@ -402,8 +394,8 @@ class ImageEditor {
 		this._helpers = new Map(); // multiple helpers can be active at once
 		this._tools = new Map(); // only one tool can be active at the moment
 		this._activeTool = null;
-		this._eventListeners = new Map();		
-		this._controls = new Map();				
+		this._eventListeners = new Map();
+		this._controls = new Map();
 										
 		this._image.onload = () => this.onImageLoad();
 						
@@ -431,7 +423,7 @@ class ImageEditor {
 	selectTool(tool) {
 		console.log('selecting tool ' + tool);
 		
-		// deactivate controls
+		// deactivate active controls and tools
 		this.deactivateControls(this);
 		
 		// ensure tool exists, necessary when tool is selected by string
@@ -482,7 +474,7 @@ class ImageEditor {
 		}
 	}
 		
-	removeEventListener(name, obj) {					
+	removeEventListener(name, obj) {				
 		if (this._eventListeners.get(name)) {
 			console.log('removing ' + name +' listener');
 			this._eventListeners.get(name).delete(obj);
@@ -503,10 +495,8 @@ class ImageEditor {
 	 */	 	
 	onImageLoad() {
 		this._canvas.height = this._image.height;
-		this._canvas.width = this._image.width;
-		this.deselectTool();
-		this.deactivateControls(this);
-		this.enableControls();		
+		this._canvas.width = this._image.width;		
+		this.deactivateControls(this);			
 		this.onChange(this);
 	}
 	
@@ -527,24 +517,23 @@ class ImageEditor {
 	
 	/**
 	 * Controls events.
-	 */
-	 
-	triggerEvent(name, e) {
+	 */	 
+	_triggerEvent(name, e) {
 		if (this._eventListeners.get(name)) {		
 			this._notifyListeners(name, e);
 		}
 	} 
 	 
 	enableControls(e) {
-		this._notifyListeners('onenablecontrols', e);
+		this._triggerEvent('onenablecontrols', e);		
 	}
 	
 	disableControls(e) {
-		this._notifyListeners('ondisablecontrols', e);
+		this._triggerEvent('ondisablecontrols', e);
 	}
 	
 	deactivateControls(e) {		
-		this._notifyListeners('ondeactivatecontrols', e);
+		this._triggerEvent('ondeactivatecontrols', e);
 	}	
 	
 	

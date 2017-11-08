@@ -6,6 +6,8 @@
  * - 3d scene setup
  * - 3d file opening
  */
+ 
+//TODO debug log class
 
 $(function(){
 
@@ -26,11 +28,10 @@ $(function(){
 	var meter2 = new Meter(ime);		
 	ime.addTool(meter);
 	ime.addTool(meter2);
+	ime.setImageSource("/static/blank.jpg");
 	//??
 	createToggleButton(ime, 'id1', meter, 'Meter').appendTo("#controlsForm fieldset div.form-group");
 	createToggleButton(ime, 'id2', meter2, 'Meter').appendTo("#controlsForm fieldset div.form-group");
-	ime.disableControls();
-	
 					
 	fileForm.onsubmit = function(e) {e.preventDefault();}
 	
@@ -60,40 +61,36 @@ $(function(){
 		
 });
 
-/*** Factory methods ***/	
-	
-	function createToggleButton(ime, id, tool, name) {
-				
-		var button = $("<button>", {class: "form-control", type: "button", id: id, text: name});
-				
-		var tb = new ToggleButton();
-		
-		ime.addControl(tb);
-	
-		tb.onActivate = () => {				
-				ime.selectTool(tool);				
-				ime.addEventListener("ondeactivatecontrols", tb, () => tb.deactivate());
-				button.addClass("active");
-			};
+/*** Factory methods ***/
+function createToggleButton(ime, id, tool, name) {
 			
-		tool.onActivateCallback = () => {button.addClass("active");};
-		tool.onDeactivateCallback = () => {button.removeClass("active");};
-		
-		tb.onDeactivate = () => {
-				ime.removeEventListener("ondeactivatecontrols", tb, () => tb.deactivate());
-				ime.deselectTool();
-				button.removeClass("active");				
-			};
+	var button = $("<button>", {class: "form-control", type: "button", id: id, text: name});
+			
+	var tb = new ToggleButton();
 	
-		tb.onEnable = () => button.prop("disabled", false);
-		tb.onDisable = () => button.prop("disabled", true);	
+	ime.addControl(tb);
+
+	tb.onActivate = () => {				
+			ime.selectTool(tool);				
+			ime.addEventListener("ondeactivatecontrols", tb, () => tb.deactivate());
+			button.addClass("active");
+		};
 		
-		ime.addEventListener("onenablecontrols", tb, () => tb.enable());
-		ime.addEventListener("ondisablecontrols", tb, () => tb.disable());
+	tb.onDeactivate = () => {
+			ime.removeEventListener("ondeactivatecontrols", tb);
+			ime.deselectTool();
+			button.removeClass("active");				
+		};
+
+	tb.onEnable = () => button.prop("disabled", false);
+	tb.onDisable = () => button.prop("disabled", true);	
 	
-		button.click(function () {
-			tb.click();
-		});
-		
-		return button;
-	}   
+	ime.addEventListener("onenablecontrols", tb, () => tb.enable());
+	ime.addEventListener("ondisablecontrols", tb, () => tb.disable());
+
+	button.click(function () {
+		tb.click();
+	});
+	
+	return button;
+}   
