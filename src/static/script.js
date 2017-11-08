@@ -17,84 +17,21 @@ $(function(){
    	var fileInput = document.getElementById("fileInput");
 		
 	var reader = new FileReader();
-	
-	/*** IME CONTROLS INIT ***/
 		
 	var ime = new ImageEditor(canvas2d);
 	
-	/* move to factory method later? */
-	/*
-	var m = new Meter(ime);	
-	ime._tools.set("meter", m);	
-	var tb = new ToggleButton();
-	
-	tb.onActivate = () => {ime.selectTool("meter"); $("#meter").addClass("active");};
-	tb.onDeactivate = () => {$("#meter").removeClass("active");};
-	
-	tb.onEnable = () => $("#meter").prop("disabled", false);
-	tb.onDisable = () => $("#meter").prop("disabled", true);
-	
-	ime.addEventListener("ondeactivatecontrols", tb, () => tb.deactivate());
-	ime.addEventListener("onenablecontrols", tb, () => tb.enable());
-	ime.addEventListener("ondisablecontrols", tb, () => tb.disable());
-	
-	$("#meter").click(function () {
-		tb.click();
-	});*/
-	
-	createToggleButtonControl("id1", ime, "Meter").appendTo("#controlsForm fieldset div.form-group");
-	createToggleButtonControl("id2", ime, "Meter").appendTo("#controlsForm fieldset div.form-group");
-	
-	/*** IME INIT ***/
-	
-	ime.disableControls();  // ime.init()
+	/*** IME SETUP ***/
 		
-	// TODO factory helper class for buttons and controls
-	// build (configure) tools helpers and controls outside IME
-	// editorInitFunction
+	var meter = new Meter(ime);
+	var meter2 = new Meter(ime);		
+	ime.addTool(meter);
+	ime.addTool(meter2);
+	//??
+	createToggleButton(ime, 'id1', meter, 'Meter').appendTo("#controlsForm fieldset div.form-group");
+	createToggleButton(ime, 'id2', meter2, 'Meter').appendTo("#controlsForm fieldset div.form-group");
+	ime.disableControls();
 	
-	function createToggleButtonControl(id, ime, tool) {
-		switch (tool) {
-			case ("Meter"):
-				var t = new Meter(ime);				
-				break;
-		}
-		
-		ime._tools.set(t, t);
-				
-		var button = $("<button>", {class: "form-control", type: "button", id: id, text: tool});
-				
-		let tb = new ToggleButton();
-		
-		ime._controls.set(tb, tb);
-	
-		tb.onActivate = () => {
-				ime.deactivateControls(t);
-				ime.selectTool(t);				
-				ime.addEventListener("ondeactivatecontrols", tb, () => tb.deactivate());
-				button.addClass("active");
-			};
-		
-		tb.onDeactivate = () => {
-				ime.removeEventListener("ondeactivatecontrols", tb, () => tb.deactivate());
-				ime.deselectTool();
-				button.removeClass("active");				
-			};
-	
-		tb.onEnable = () => button.prop("disabled", false);
-		tb.onDisable = () => button.prop("disabled", true);	
-		
-		ime.addEventListener("onenablecontrols", tb, () => tb.enable());
-		ime.addEventListener("ondisablecontrols", tb, () => tb.disable());
-	
-		button.click(function () {
-			tb.click();
-		});
-		
-		return button;
-	}
-		
-				
+					
 	fileForm.onsubmit = function(e) {e.preventDefault();}
 	
 	// on file select				
@@ -121,4 +58,42 @@ $(function(){
   		fileForm.reset();
 	}
 		
-});   
+});
+
+/*** Factory methods ***/	
+	
+	function createToggleButton(ime, id, tool, name) {
+				
+		var button = $("<button>", {class: "form-control", type: "button", id: id, text: name});
+				
+		var tb = new ToggleButton();
+		
+		ime.addControl(tb);
+	
+		tb.onActivate = () => {				
+				ime.selectTool(tool);				
+				ime.addEventListener("ondeactivatecontrols", tb, () => tb.deactivate());
+				button.addClass("active");
+			};
+			
+		tool.onActivateCallback = () => {button.addClass("active");};
+		tool.onDeactivateCallback = () => {button.removeClass("active");};
+		
+		tb.onDeactivate = () => {
+				ime.removeEventListener("ondeactivatecontrols", tb, () => tb.deactivate());
+				ime.deselectTool();
+				button.removeClass("active");				
+			};
+	
+		tb.onEnable = () => button.prop("disabled", false);
+		tb.onDisable = () => button.prop("disabled", true);	
+		
+		ime.addEventListener("onenablecontrols", tb, () => tb.enable());
+		ime.addEventListener("ondisablecontrols", tb, () => tb.disable());
+	
+		button.click(function () {
+			tb.click();
+		});
+		
+		return button;
+	}   

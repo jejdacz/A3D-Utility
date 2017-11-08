@@ -205,10 +205,15 @@ class ToolBase {
 	constructor() {				
 		this._active = false;
 		this._drawable = false;
-	}	
+		this._onActivateCallback = function(){};
+		this._onDeactivateCallback = function(){};
+	}		
 	
 	get active() {return this._active;}
 	get drawable() {return this._drawable;}
+	
+	set onActivateCallback(c) {this._onActivateCallback = c;}	
+	set onDeactivateCallback(c) {this._onDeactivateCallback = c;}
 		
 	// *** order of code is critical
 	activate() {
@@ -216,16 +221,18 @@ class ToolBase {
 			console.warn('Activating active tool!');
 		}
 		//this._ime.selectTool(this);  ??? select ttol directly via ime ???
+		this._onActivateCallback();
 		this.onActivate();
-		this._active = true;
+		this._active = true;		
 	}
 	
 	deactivate() {
 		if (this._active == false) {
 			console.warn('Deactivating non-active tool!');
 		}
+		this._onDeactivateCallback();
 		this.onDeactivate();
-		this._active = false;
+		this._active = false;		
 	}
 	
 	draw() {}
@@ -256,35 +263,38 @@ class Meter extends ToolBase {
 	}
 	
 	_start(x, y) {					
-		console.log('mtr start');
-		this._ime.disableControls(this);
+		console.log('mtr start');		
 		this._startPos.x = x;
 		this._startPos.y = y;
 		this._currentPos.x = x;
 		this._currentPos.y = y;		
 		this._drawable = true;
 		this._ime.addEventListener('mousemove', this, e => this.onMouseMove(e));
-		this._onMouseDownAction = (x, y) => this._finish(x, y);			
+		this._onMouseDownAction = (x, y) => this._finish(x, y);
+		this.onChange();
 	}
 	
 	_finish(x, y) {
-		console.log('mtr finish');
-		this._ime.enableControls(this);
+		console.log('mtr finish');		
 		this._drawable = false;				
 		this._onMouseDownAction = (x, y) => this._start(x, y);	
 		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));
+		this.onChange();
 	}
 	
 	onActivate() {
 		console.log('meter activate');				
-		this._ime.addEventListener('mousedown', this, e => this.onMouseDown(e));		
+		this._ime.addEventListener('mousedown', this, e => this.onMouseDown(e));
+		this.onChange();		
 	}
 	
 	onDeactivate() {
-		console.log('meter deactivate');			
+		console.log('meter deactivate');
+		this._drawable = false;			
 		this._ime.removeEventListener('mousedown', this, e => this.onMouseDown(e));
 		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));
 		this._onMouseDownAction = (x, y) => this._start(x, y);
+		this.onChange();
 	}
 	
 	onMouseDown(e) {
@@ -409,10 +419,22 @@ class ImageEditor {
 	setImageSource(src) {
 		this._image.src = src;		
 	}
+	
+	addControl(ctrl) {
+		this._controls.set(ctrl, ctrl);
+	}
+	
+	addTool(tool) {
+		this._tools.set(tool, tool);
+	}
 		
 	selectTool(tool) {
 		console.log('selecting tool ' + tool);
-		// ensure tool exists
+		
+		// deactivate controls
+		this.deactivateControls(this);
+		
+		// ensure tool exists, necessary when tool is selected by string
 		if (this._tools.get(tool) == false) {
 			throw 'Tool does not exist!';
 		}
@@ -429,8 +451,8 @@ class ImageEditor {
 	deselectTool() {
 		console.log('deselecting active tool');
 		if (this._activeTool == null) {
-			console.warn('No tool!');
-		} else {
+			console.warn('No tool to deselect!');
+		} else {			
 			this._activeTool.deactivate();
 			this._activeTool = null;
 		}
@@ -441,7 +463,7 @@ class ImageEditor {
 		if (this.activeTool != null) {
 			this._activeTool.deactivate();  /// how to notify controls??
 		} else {
-			console.warn('No tool!');
+			console.warn('No tool to deactivate!');
 		}
 	}
 	
@@ -506,16 +528,23 @@ class ImageEditor {
 	/**
 	 * Controls events.
 	 */
+	 
+	triggerEvent(name, e) {
+		if (this._eventListeners.get(name)) {		
+			this._notifyListeners(name, e);
+		}
+	} 
+	 
 	enableControls(e) {
-		this._notifyListeners('onenablecontrols', e)
+		this._notifyListeners('onenablecontrols', e);
 	}
 	
 	disableControls(e) {
-		this._notifyListeners('ondisablecontrols', e)
+		this._notifyListeners('ondisablecontrols', e);
 	}
 	
 	deactivateControls(e) {		
-		this._notifyListeners('ondeactivatecontrols', e)
+		this._notifyListeners('ondeactivatecontrols', e);
 	}	
 	
 	
