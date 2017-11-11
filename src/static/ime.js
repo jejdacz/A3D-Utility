@@ -304,7 +304,7 @@ class Meter extends ToolBase {
 	
 	onChange() {
 		console.log('mtr onchange');		
-		this.dispatchEvent(new Event('change'));		
+		this.dispatchEvent({type:"change"});		
 	}
 	
 	draw() {
@@ -491,15 +491,15 @@ class ImageEditor extends EventTarget{
 	} 
 	 
 	enableControls(e) {
-		this.dispatchEvent(new Event('enablecontrols'));		
+		this.dispatchEvent({type:"enablecontrols"});		
 	}
 	
 	disableControls(e) {
-		this.dispatchEvent(new Event('disablecontrols'));
+		this.dispatchEvent({type:"disablecontrols"});
 	}
 	
 	deactivateControls(e) {		
-		this.dispatchEvent(new Event('deactivatecontrols'));
+		this.dispatchEvent({type:"deactivatecontrols"});
 	}	
 	
 	

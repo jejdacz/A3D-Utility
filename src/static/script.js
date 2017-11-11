@@ -6,22 +6,14 @@
  * - 3d scene setup
  * - 3d file opening
  */
- 
-//TODO debug log class
-//TODO try full event driven control between IME and GUI : button -> event -> ime ; ime -> event -> button => MAP listeners key = string
-//TODO design event target class for extending IME and controls
+
 //TODO design mediator between controls and IME
 //TODO change name of IME events onSelectTool, onDeselectTool, onDeactivateTool
 //TODO * builder for controls
 //TODO * simple factory for components
+//TODO * debug log class
+
 //TODO first try then refactor
-
-class Event {
-	constructor(type) {
-		this.type = type;
-	}
-}
-
 
 class EventTarget {
 	constructor() {
