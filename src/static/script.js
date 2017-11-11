@@ -15,6 +15,12 @@
 
 //TODO first try then refactor
 
+class Callback {
+	constructor(obj, callback) {
+		this.run = function(e){callback.call(obj, e);}	
+	}
+}
+
 class EventTarget {
 	constructor() {
 		this.listeners = {};
@@ -24,6 +30,7 @@ class EventTarget {
 		if (!(type in this.listeners)) {
 			this.listeners[type] = [];
 		}
+		console.log('add lis ' + type);
 		this.listeners[type].push(callback);
 	}
 	
@@ -31,6 +38,16 @@ class EventTarget {
 		if (!(type in this.listeners)) {
 			return;
 		}
+		
+		var stack = this.listeners[type];
+  		for (var i = 0, l = stack.length; i < l; i++) {
+    		if (stack[i] === callback){
+      		stack.splice(i, 1);
+      		console.log('rem lis ' + type);
+      		return;
+    		}
+  		}
+		
 	}
 	
 	dispatchEvent(event) {
@@ -58,25 +75,29 @@ $(function(){
    	var fileInput = document.getElementById("fileInput");
 		
 	var reader = new FileReader();
-		
+			
 	var ime = new ImageEditor(canvas2d);
-	
+		
 	/*** IME SETUP ***/
+	
+	canvas2d.addEventListener('mousemove', e => ime.dispatchEvent({type:"mousemove",event:e}));
 		
 	var meter = new Meter(ime);
 	meter.addEventListener('change', e => ime.onChange(e));
 	
-	var meter2 = new Meter(ime);
-	meter2.addEventListener('change', e => ime.onChange(e));
-			
+	
+	//var meter2 = new Meter(ime);
+	//meter2.addEventListener('change', e => ime.onChange(e));
+	
+	
 	ime.addTool(meter);
-	ime.addTool(meter2);
+	//ime.addTool(meter2);
 	ime.setImageSource("/static/blank.jpg");
 	
 	
 	//??
 	createToggleButton(ime, 'id1', meter, 'Meter').appendTo("#controlsForm fieldset div.form-group");
-	createToggleButton(ime, 'id2', meter2, 'Meter').appendTo("#controlsForm fieldset div.form-group");
+	//createToggleButton(ime, 'id2', meter2, 'Meter').appendTo("#controlsForm fieldset div.form-group");
 					
 	fileForm.onsubmit = function(e) {e.preventDefault();}
 	
@@ -104,7 +125,7 @@ $(function(){
   		fileForm.reset();
 	}
 		
-});
+
 
 /*** Factory methods ***/
 function createToggleButton(ime, id, tool, name) {
@@ -114,28 +135,33 @@ function createToggleButton(ime, id, tool, name) {
 	var tb = new ToggleButton();
 	
 	ime.addControl(tb);
+	
+	tb.addEventListener('selecttool', e => ime.onSelectTool(e));
+	tb.addEventListener('deselecttool', e => ime.onDeselectTool(e));
 
 	tb.onActivate = () => {				
-			ime.selectTool(tool);				
-			ime.addEventListener("deactivatecontrols", () => tb.deactivate());
+			tb.dispatchEvent({type:"selecttool","tool":tool});				
+			//ime.addEventListener('deselecttool', () => tb.deactivate());
 			button.addClass("active");
 		};
 		
 	tb.onDeactivate = () => {
-			ime.removeEventListener("deactivatecontrols", () => tb.deactivate());
-			ime.deselectTool();
-			button.removeClass("active");				
+			//ime.removeEventListener('deselecttool', () => tb.deactivate());
+			tb.dispatchEvent({type:"deselecttool","tool":tool});
+			button.removeClass("active");			
 		};
 
 	tb.onEnable = () => button.prop("disabled", false);
 	tb.onDisable = () => button.prop("disabled", true);	
 	
-	ime.addEventListener("enablecontrols", () => tb.enable());
-	ime.addEventListener("disablecontrols", () => tb.disable());
+	//ime.addEventListener("enablecontrols", () => tb.enable());
+	//ime.addEventListener("disablecontrols", () => tb.disable());
 
 	button.click(function () {
 		tb.click();
 	});
 	
 	return button;
-}   
+}
+
+});   
