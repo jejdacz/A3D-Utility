@@ -16,7 +16,46 @@
 //TODO * simple factory for components
 //TODO first try then refactor
 
-class Event
+class Event {
+	constructor(type) {
+		this.type = type;
+	}
+}
+
+
+class EventTarget {
+	constructor() {
+		this.listeners = {};
+	}
+	
+	addEventListener(type, callback) {
+		if (!(type in this.listeners)) {
+			this.listeners[type] = [];
+		}
+		this.listeners[type].push(callback);
+	}
+	
+	removeEventListener(type, callback) {
+		if (!(type in this.listeners)) {
+			return;
+		}
+	}
+	
+	dispatchEvent(event) {
+		if (!(event.type in this.listeners)) {
+			return this;
+		}
+		var stack = this.listeners[event.type];
+		
+		for (var i = 0, l = stack.length; i < l; i++) {
+			stack[i].call(this, event);
+		}
+		
+		return this;
+	}
+}
+
+
 $(function(){
 
    	var imeControls = document.getElementById("imeControls");
@@ -33,10 +72,16 @@ $(function(){
 	/*** IME SETUP ***/
 		
 	var meter = new Meter(ime);
-	var meter2 = new Meter(ime);		
+	meter.addEventListener('change', e => ime.onChange(e));
+	
+	var meter2 = new Meter(ime);
+	meter2.addEventListener('change', e => ime.onChange(e));
+			
 	ime.addTool(meter);
 	ime.addTool(meter2);
 	ime.setImageSource("/static/blank.jpg");
+	
+	
 	//??
 	createToggleButton(ime, 'id1', meter, 'Meter').appendTo("#controlsForm fieldset div.form-group");
 	createToggleButton(ime, 'id2', meter2, 'Meter').appendTo("#controlsForm fieldset div.form-group");
@@ -80,12 +125,12 @@ function createToggleButton(ime, id, tool, name) {
 
 	tb.onActivate = () => {				
 			ime.selectTool(tool);				
-			ime.addEventListener("ondeactivatecontrols", tb, () => tb.deactivate());
+			ime.addEventListener("deactivatecontrols", () => tb.deactivate());
 			button.addClass("active");
 		};
 		
 	tb.onDeactivate = () => {
-			ime.removeEventListener("ondeactivatecontrols", tb);
+			ime.removeEventListener("deactivatecontrols", () => tb.deactivate());
 			ime.deselectTool();
 			button.removeClass("active");				
 		};
@@ -93,8 +138,8 @@ function createToggleButton(ime, id, tool, name) {
 	tb.onEnable = () => button.prop("disabled", false);
 	tb.onDisable = () => button.prop("disabled", true);	
 	
-	ime.addEventListener("onenablecontrols", tb, () => tb.enable());
-	ime.addEventListener("ondisablecontrols", tb, () => tb.disable());
+	ime.addEventListener("enablecontrols", () => tb.enable());
+	ime.addEventListener("disablecontrols", () => tb.disable());
 
 	button.click(function () {
 		tb.click();

@@ -201,8 +201,9 @@ class Point {
 	}	
 }
 
-class ToolBase {
+class ToolBase extends EventTarget {
 	constructor() {				
+		super();
 		this._active = false;
 		this._drawable = false;		
 	}		
@@ -261,7 +262,7 @@ class Meter extends ToolBase {
 		this._currentPos.x = x;
 		this._currentPos.y = y;		
 		this._drawable = true;
-		this._ime.addEventListener('mousemove', this, e => this.onMouseMove(e));
+		this._ime.canvas.addEventListener('mousemove', e => this.onMouseMove(e));
 		this._onMouseDownAction = (x, y) => this._finish(x, y);
 		this.onChange();
 	}
@@ -270,27 +271,27 @@ class Meter extends ToolBase {
 		console.log('mtr finish');		
 		this._drawable = false;				
 		this._onMouseDownAction = (x, y) => this._start(x, y);	
-		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));
+		this._ime.canvas.removeEventListener('mousemove', e => this.onMouseMove(e));
 		this.onChange();
 	}
 	
 	onActivate() {
 		console.log('meter activate');				
-		this._ime.addEventListener('mousedown', this, e => this.onMouseDown(e));
+		this._ime.canvas.addEventListener('mousedown', e => this.onMouseDown(e));
 		this.onChange();		
 	}
 	
 	onDeactivate() {
 		console.log('meter deactivate');
 		this._drawable = false;			
-		this._ime.removeEventListener('mousedown', this, e => this.onMouseDown(e));
-		this._ime.removeEventListener('mousemove', this, e => this.onMouseMove(e));
+		this._ime.canvas.removeEventListener('mousedown', e => this.onMouseDown(e));
+		this._ime.canvas.removeEventListener('mousemove', e => this.onMouseMove(e));
 		this._onMouseDownAction = (x, y) => this._start(x, y);
 		this.onChange();
 	}
 	
 	onMouseDown(e) {
-		this._onMouseDownAction(e.offsetX, e.offsetY);
+		this._onMouseDownAction(e.offsetX, e.offsetY);		
 		this.onChange();
 	}
 	
@@ -303,7 +304,7 @@ class Meter extends ToolBase {
 	
 	onChange() {
 		console.log('mtr onchange');		
-		this._ime.onChange(this);
+		this.dispatchEvent(new Event('change'));		
 	}
 	
 	draw() {
@@ -385,23 +386,19 @@ class ToggleButton {
  * Image Editor.
  */			
 			
-class ImageEditor {
-	constructor(canvas) {				
+class ImageEditor extends EventTarget{
+	constructor(canvas) {		
+		super();
 		this._canvas = canvas;
 		this._ctx = canvas.getContext('2d');
 		this._originalImage = new Image(); // backup for undo
 		this._image = new Image(); // image to edit
 		this._helpers = new Map(); // multiple helpers can be active at once
 		this._tools = new Map(); // only one tool can be active at the moment
-		this._activeTool = null;
-		this._eventListeners = new Map();
+		this._activeTool = null;		
 		this._controls = new Map();
 										
 		this._image.onload = () => this.onImageLoad();
-						
-		this._canvas.addEventListener('mousedown', e => this._notifyListeners('mousedown', e));				
-		this._canvas.addEventListener('mouseup', e => this._notifyListeners('mouseup', e));
-		this._canvas.addEventListener('mousemove', e => this._notifyListeners('mousemove', e));
 	}
 	
 	get canvas() { return this._canvas;}
@@ -460,37 +457,6 @@ class ImageEditor {
 	}
 	
 	/**
-	 * Event listeners handling.
-	 */	
-	addEventListener(name, obj, func) {
-		if (this._eventListeners.get(name)) {
-			console.log('adding ' + name +' listener');
-			this._eventListeners.get(name).set(obj, func);
-		} else {
-			console.log('creating ' + name +' listener group');
-			console.log('adding ' + name +' listener');
-			this._eventListeners.set(name, new Map());
-			this._eventListeners.get(name).set(obj, func);
-		}
-	}
-		
-	removeEventListener(name, obj) {				
-		if (this._eventListeners.get(name)) {
-			console.log('removing ' + name +' listener');
-			this._eventListeners.get(name).delete(obj);
-		}
-	}	
-				
-	_notifyListeners(name, e) {				
-		if (this._eventListeners.get(name)) {
-			console.log('notifying ' + name +' listeners');
-			this._eventListeners.get(name).forEach(func => func(e));
-		} else {
-			console.log('no listeners');					
-		}
-	}	
-	
-	/**
 	 * Events handling.
 	 */	 	
 	onImageLoad() {
@@ -525,15 +491,15 @@ class ImageEditor {
 	} 
 	 
 	enableControls(e) {
-		this._triggerEvent('onenablecontrols', e);		
+		this.dispatchEvent(new Event('enablecontrols'));		
 	}
 	
 	disableControls(e) {
-		this._triggerEvent('ondisablecontrols', e);
+		this.dispatchEvent(new Event('disablecontrols'));
 	}
 	
 	deactivateControls(e) {		
-		this._triggerEvent('ondeactivatecontrols', e);
+		this.dispatchEvent(new Event('deactivatecontrols'));
 	}	
 	
 	
