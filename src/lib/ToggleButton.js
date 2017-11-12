@@ -34,24 +34,36 @@ class ToggleButton extends EventTarget {
 	}
 	
 	enable() {
+		if (this._enabled) {
+			return;
+		}
 		console.log('tb enabled');
 		this._enabled = true;
 		this._onEnableCallback();
 	}
 	
 	disable() {
+		if (!this._enabled) {
+			return;
+		}
 		console.log('tb disabled');
 		this._enabled = false;
 		this._onDisableCallback();
 	}
 	
 	activate() {
+		if (this._activated) {
+			return;
+		}
 		console.log('tb activated');
 		this._activated = true;
 		this._onActivateCallback();		
 	}
 	
 	deactivate() {
+		if (!this._activated) {
+			return;
+		}
 		console.log('tb deactivated');
 		this._activated = false;
 		this._onDeactivateCallback();

@@ -14,8 +14,8 @@ class ImageEditorController extends EventTarget{
 		this._originalImage = new Image(); // backup for undo
 		this._image = new Image(); // image to edit
 		this._helpers = []; // multiple helpers can be active at once
-		this._tools = new Map(); // only one tool can be active at the moment
-		this._activeTool = null;		
+		this._tools = []; // only one tool can be active at the moment
+		this._activeTool = null;	
 		this._image.onload = (e) => this.onImageLoad(e);
 	}
 	
@@ -28,30 +28,21 @@ class ImageEditorController extends EventTarget{
 	}
 	
 	addTool(tool) {
-		this._tools.set(tool, tool);
+		this._tools.push(tool);
 	}
-	
-	addHelper(helper) {
-		this._helpers.push(helper);
-	}
-		
+			
 	activateTool(tool) {
 		console.log('activating tool ' + tool);
 		// notify about tool override		
 		if (this._activeTool != null) {
 			this.dispatchEvent({type:"overridetool"});
-		}		
-		
-		// ensure tool exists, necessary when tool is selected by string
-		if (this._tools.get(tool) == false) {
-			throw 'Tool does not exist!';
 		}
 				
 		// disable currently active tool if any		
 		if (this._activeTool != null) this.deactivateTool(this._activeTool);
 				
 		// activate selected tool
-		this._activeTool = this._tools.get(tool);
+		this._activeTool = tool;
 		this._activeTool.activate();		
 	}
 	
@@ -65,8 +56,20 @@ class ImageEditorController extends EventTarget{
 		}
 	}
 	
+	addHelper(helper) {
+		this._helpers.push(helper);
+	}
+	
+	activateHelper(helper) {
+		helper.activate();
+	}
+	
+	deactivateHelper(helper) {
+		helper.deactivate();
+	}
+	
 	/**
-	 * Events handlers.
+	 * Event handlers.
 	 */	 	
 	onImageLoad(e) {		
 		this._canvas.height = this._image.height;
