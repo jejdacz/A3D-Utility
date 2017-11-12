@@ -84,7 +84,7 @@ class Meter extends ToolBase {
 		console.log('mtr onchange');		
 		this.dispatchEvent({type:"change"});		
 	}
-	
+		
 	draw() {
 		//TODO global drawing configuration
 		if (this.drawable) {		

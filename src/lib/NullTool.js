@@ -4,13 +4,15 @@
  * @author Marek Mego
  */
  
+import { ToolBase } from './ToolBase.js';
+ 
 class NullTool extends ToolBase {
 	constructor() {
 		super();
 	}
 	
-	onActivate(){}
-	onDeactivate(){}
+	activate(){}
+	deactivate(){}
 }
 
 export { NullTool };	

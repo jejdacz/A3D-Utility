@@ -7,11 +7,20 @@
  * - 3d file opening
  */
 
+//MUST:
+//TODO 	dispatch event on toolbutton activate to deactivate other tool buttons via GUICont.
+//		remove listening to tooloverride
+//		remove deactivate callback from toolbuttons
+//		button.click(tb.activate);
+//TODO	ime._tools as array
+
+//SHOULD:
 //TODO * builder for controls
 //TODO * simple factory for components
 //TODO * debug log class
 
-//TODO first try then refactor
+//TIPS:
+//TODO first test then refactor
 
 
 import { ImageEditorController } from './lib/ImageEditorController.js';
@@ -19,6 +28,7 @@ import { EventTarget } from './lib/EventTarget.js';
 import { Grid } from './lib/Grid.js';
 import { ToggleButton } from './lib/ToggleButton.js';
 import { Meter } from './lib/Meter.js';
+import { NullTool } from './lib/NullTool.js';
 
 $(function(){
    	
@@ -38,19 +48,27 @@ $(function(){
 	var grid = new Grid(ime.canvas, 3, 3);	
 	ime.addHelper(grid);
 	grid.addEventListener('change', e => ime.onChange(e));
-	createHelperButton(grid, createButtonHTML('id3', 'Grid')).appendTo("#controlsForm fieldset div.form-group");
+	createHelperButton(grid, createButtonHTML('gridHelper', 'Grid')).appendTo("#controlsForm fieldset div.form-group");
 	
 	// Meter tool init
 	var meter = new Meter(ime);
 	ime.addTool(meter);
 	meter.addEventListener('change', e => ime.onChange(e));
-	createToolButton(meter, createButtonHTML('id1', 'Meter')).appendTo("#controlsForm fieldset div.form-group");
+	createToolButton(meter, createButtonHTML('meterTool', 'Meter')).appendTo("#controlsForm fieldset div.form-group");
 	
 	// Meter tool 2	init
 	var meter2 = new Meter(ime);
 	ime.addTool(meter2);
 	meter2.addEventListener('change', e => ime.onChange(e));
-	createToolButton(meter, createButtonHTML('id1', 'Meter')).appendTo("#controlsForm fieldset div.form-group");
+	createToolButton(meter, createButtonHTML('meterTool2', 'Meter')).appendTo("#controlsForm fieldset div.form-group");
+	
+	// Cursor/Null tool
+	var cursor = new NullTool();
+	ime.addTool(cursor);	
+	createToolButton(cursor, createButtonHTML('cursorTool', 'Cursor')).appendTo("#controlsForm fieldset div.form-group");
+	
+	// activate cursor tool as default
+	$("#cursorTool").trigger("click");
 			
 	// set default image
 	ime.setImageSource("/static/blank.jpg");

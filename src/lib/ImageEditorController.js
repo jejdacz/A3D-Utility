@@ -72,10 +72,12 @@ class ImageEditorController extends EventTarget{
 		this._canvas.height = this._image.height;
 		this._canvas.width = this._image.width;
 		this.dispatchEvent({type:"imageload"});		
+		// restart tool
 		if (this._activeTool) {
-			this.deactivateTool(this._activeTool);
+			this._activeTool.deactivate();
+			this._activeTool.activate();			
 		}		
-		this.onChange(this);
+		this.onChange({type:"change"});
 	}
 	
 	onChange(e) {
