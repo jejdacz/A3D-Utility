@@ -254,11 +254,14 @@ class Meter extends ToolBase {
 		this._currentPos = new Point(0, 0);
 		this._onMouseDownAction = (x, y) => this._start(x, y);
 		
+		var md = (e) => this.onMouseDown(e);
+		this.mdr = function() {ime.canvas.removeEventListener('mousedown', md)};
+		this.mda = function() {ime.canvas.addEventListener('mousedown', md)};
 		
 		
-		var fc = (e) => this.onMouseMove(e);
-		this.mmr = function() {ime.canvas.removeEventListener('mousemove', fc)};
-		this.mma = function() {ime.canvas.addEventListener('mousemove', fc)};	
+		var mm = (e) => this.onMouseMove(e);
+		this.mmr = function() {ime.canvas.removeEventListener('mousemove', mm)};
+		this.mma = function() {ime.canvas.addEventListener('mousemove', mm)};	
 				
 	}
 	
@@ -268,10 +271,8 @@ class Meter extends ToolBase {
 		this._startPos.y = y;
 		this._currentPos.x = x;
 		this._currentPos.y = y;		
-		this._drawable = true;
-		//this._ime.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
-		this.mma();
-		//this._ime.addEventListener('mousemove', (e) => this._cb.run(e.event));
+		this._drawable = true;		
+		this.mma();		
 		this._onMouseDownAction = (x, y) => this._finish(x, y);
 		this.onChange();
 	}
@@ -281,20 +282,19 @@ class Meter extends ToolBase {
 		this._drawable = false;				
 		this._onMouseDownAction = (x, y) => this._start(x, y);
 		this.mmr();
-		//this._ime.removeEventListener('mousemove', (e) => this._cb.run(e.event));
 		this.onChange();
 	}
 	
 	onActivate() {
 		console.log('meter activate');				
-		this._ime.canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
+		this.mda();
 		this.onChange();		
 	}
 	
 	onDeactivate() {
 		console.log('meter deactivate');
 		this._drawable = false;			
-		this._ime.canvas.removeEventListener('mousedown', (e) => this.onMouseDown(e));
+		this.mdr();
 		//this._ime.canvas.removeEventListener('mousemove', (e) => this.onMouseMove(e));
 		this._onMouseDownAction = (x, y) => this._start(x, y);
 		this.onChange();
@@ -356,6 +356,7 @@ class ToggleButton extends EventTarget {
 	set onDisable(c) {this._onDisableCallback = c;}	
 	set onActivate(c) {this._onActivateCallback = c;}	
 	set onDeactivate(c) {this._onDeactivateCallback = c;}
+	set onRemoteDeactivate(c) {this._onRemoteDeactivateCallback = c;}
 	
 	click() {
 		console.log('tb clicked');
@@ -390,7 +391,13 @@ class ToggleButton extends EventTarget {
 		console.log('tb deactivated');
 		this._activated = false;
 		this._onDeactivateCallback();
-	}	
+	}
+	
+	remoteDeactivate() {
+		console.log('tb remotedeactivated');
+		this._activated = false;
+		this._onRemoteDeactivateCallback();
+	}
 }
 		
 /**
@@ -428,8 +435,8 @@ class ImageEditor extends EventTarget{
 		this._tools.set(tool, tool);
 	}
 		
-	selectTool(tool) {
-		console.log('selecting tool ' + tool);
+	activateTool(tool) {
+		console.log('activating tool ' + tool);
 		
 		// deactivate active controls and tools
 		
@@ -447,33 +454,25 @@ class ImageEditor extends EventTarget{
 		}
 				
 		// disable currently active tool if any		
-		if (this._activeTool != null) this.deselectTool();
+		if (this._activeTool != null) this.deactivateTool(this._activeTool);
 				
 		// activate selected tool
 		this._activeTool = this._tools.get(tool);
-		this._activeTool.activate();
-		
+		this._activeTool.activate();		
 	}
 	
-	deselectTool() {
-		console.log('deselecting active tool');
+	deactivateTool(tool) {
+		console.log('deactivating tool' + tool);
 		if (this._activeTool == null) {
-			console.warn('No tool to deselect!');
-		} else {			
+			console.warn('No tool to deactivate!');
+		} else {
 			this._activeTool.deactivate();
 			this._activeTool = null;
-			this.dispatchEvent({type:"deselecttool"});
+			this.dispatchEvent({type:"deactivatetool"});			
 		}
 	}
 	
-	deactivateTool() {
-		console.log('deactivating active tool');
-		if (this.activeTool != null) {
-			this._activeTool.deactivate();  /// how to notify controls??
-		} else {
-			console.warn('No tool to deactivate!');
-		}
-	}
+	
 	
 	/**
 	 * Events handling.
@@ -481,7 +480,7 @@ class ImageEditor extends EventTarget{
 	onImageLoad() {
 		this._canvas.height = this._image.height;
 		this._canvas.width = this._image.width;		
-		this.deactivateControls(this);
+		this.deactivateTool(this._activeTool);
 		this.onChange(this);
 	}
 	
@@ -490,14 +489,14 @@ class ImageEditor extends EventTarget{
 		this.draw();
 	}
 	
-	onSelectTool(e) {
-		console.log('ime onselecttool');
-		this.selectTool(e.tool);
+	onActivateTool(e) {
+		console.log('ime onactivatettool');
+		this.activateTool(e.tool);
 	}
 	
-	onDeselectTool(e) {
-		console.log('ime ondeselecttool');
-		this.deselectTool(e.tool);
+	onDeactivateTool(e) {
+		console.log('ime ondeactivatetool');
+		this.deactivateTool(e.tool);
 	}
 	
 	/**
@@ -519,17 +518,7 @@ class ImageEditor extends EventTarget{
 		}
 	} 
 	 
-	enableControls(e) {
-		this.dispatchEvent({type:"enablecontrols"});		
-	}
 	
-	disableControls(e) {
-		this.dispatchEvent({type:"disablecontrols"});
-	}
-	
-	deactivateControls(e) {		
-		this.dispatchEvent({type:"deactivatecontrols"});
-	}	
 	
 	
 	

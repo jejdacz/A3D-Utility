@@ -15,11 +15,7 @@
 
 //TODO first try then refactor
 
-class Callback {
-	constructor(obj, callback) {
-		this.run = function(e){callback.call(obj, e);}	
-	}
-}
+
 
 class EventTarget {
 	constructor() {
@@ -75,30 +71,25 @@ $(function(){
    	var fileInput = document.getElementById("fileInput");
 		
 	var reader = new FileReader();
+	
+	var controlsEventHandler = new EventTarget();
 			
 	var ime = new ImageEditor(canvas2d);
 		
 	/*** IME SETUP ***/
 	
-	canvas2d.addEventListener('mousemove', e => ime.dispatchEvent({type:"mousemove",event:e}));
-		
 	var meter = new Meter(ime);
-	meter.addEventListener('change', e => ime.onChange(e));
-	
-	
-	//var meter2 = new Meter(ime);
-	//meter2.addEventListener('change', e => ime.onChange(e));
-	
-	
 	ime.addTool(meter);
-	//ime.addTool(meter2);
-	ime.setImageSource("/static/blank.jpg");
-	
-	
-	//??
+	meter.addEventListener('change', e => ime.onChange(e));
 	createToggleButton(ime, 'id1', meter, 'Meter').appendTo("#controlsForm fieldset div.form-group");
-	//createToggleButton(ime, 'id2', meter2, 'Meter').appendTo("#controlsForm fieldset div.form-group");
-					
+		
+	var meter2 = new Meter(ime);
+	ime.addTool(meter2);
+	meter2.addEventListener('change', e => ime.onChange(e));
+	createToggleButton(ime, 'id2', meter2, 'Meter').appendTo("#controlsForm fieldset div.form-group");
+		
+	ime.setImageSource("/static/blank.jpg");
+						
 	fileForm.onsubmit = function(e) {e.preventDefault();}
 	
 	// on file select				
@@ -136,27 +127,33 @@ function createToggleButton(ime, id, tool, name) {
 	
 	ime.addControl(tb);
 	
-	tb.addEventListener('selecttool', e => ime.onSelectTool(e));
-	tb.addEventListener('deselecttool', e => ime.onDeselectTool(e));
-
-	tb.onActivate = () => {				
-			tb.dispatchEvent({type:"selecttool","tool":tool});				
-			//ime.addEventListener('deselecttool', () => tb.deactivate());
-			button.addClass("active");
-		};
+	tb.addEventListener('activatetool', e => ime.onActivateTool(e));
+	tb.addEventListener('deactivatetool', e => ime.onDeactivateTool(e));
 		
+	var dt = () => tb.remoteDeactivate();	
+	
+	tb.onActivate = () => {				
+		tb.dispatchEvent({type:"activatetool","tool":tool});				
+		ime.addEventListener('deactivatetool', dt);
+		button.addClass("active");
+			
+	};
+	
 	tb.onDeactivate = () => {
-			//ime.removeEventListener('deselecttool', () => tb.deactivate());
-			tb.dispatchEvent({type:"deselecttool","tool":tool});
-			button.removeClass("active");			
-		};
+		ime.removeEventListener('deactivatetool', dt);
+		tb.dispatchEvent({type:"deactivatetool","tool":tool});
+		button.removeClass("active");			
+	};
+	
+	tb.onRemoteDeactivate = () => {
+		ime.removeEventListener('deactivatetool', dt);		
+		button.removeClass("active");
+	};		
+	
 
 	tb.onEnable = () => button.prop("disabled", false);
 	tb.onDisable = () => button.prop("disabled", true);	
 	
-	//ime.addEventListener("enablecontrols", () => tb.enable());
-	//ime.addEventListener("disablecontrols", () => tb.disable());
-
 	button.click(function () {
 		tb.click();
 	});
