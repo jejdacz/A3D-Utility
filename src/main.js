@@ -8,12 +8,12 @@
  */
 
 //MUST:
-//TODO Refactor methods out of DOC READY and to MODULES
+//TODO Refactor methods out of DOC READY and to MODULES  ---- SAME ABSTRACTION
 //TODO Crop class
 //TODO UNDO
 //TODO Zoom
 //TODO GUIController class
-//TODO factory for components
+//TODO factory for components UTILITY MODULE
 
 //SHOULD:
 //TODO * builder for controls
@@ -30,6 +30,11 @@ import { Grid } from './lib/Grid.js';
 import { ToggleButton } from './lib/ToggleButton.js';
 import { Meter } from './lib/Meter.js';
 import { NullTool } from './lib/NullTool.js';
+import { Factory } from './lib/Factory.js';
+
+const GUI_HELPERS = "#controlsForm fieldset div.form-group";
+const GUI_TOOLS = "#controlsForm fieldset div.form-group";
+
 
 var mess = "Your browser does not support the HTML5 canvas tag.";
 var $canvas2d = $("<canvas>", {id: "canvas2d", text: mess});
@@ -117,94 +122,8 @@ $(function(){
   		// reset form when file is loaded
   		fileForm.reset();
 	}
-		
-//createButtonHTML(id, name).HTML(createButtonHTML(id, name)).appendTo(dsfdfs).create
-// build process
-// 1.
 
-/*** Factory methods ***/
+});
 
-/**
- * Creates Tool button. Button is stored in GUIController.controls.
- * Sets button callbacks and listeners.
- * Returns jquery object. 
- */
-function createToolButton(tool, button) {
-			
-	var tb = new ToggleButton();
-	
-	GUIController.controls.push(tb);
-	
-	GUIController.addEventListener('enablecontrols', e => tb.enable(e));
-	GUIController.addEventListener('disablecontrols', e => tb.disable(e));
-	tb.addEventListener('activatetool', e => GUIController.dispatchEvent(e));
-		
-	var dt = () => tb.deactivate();
-	
-	tb.onActivate = () => {		
-		tb.dispatchEvent({type:"activatetool"});		
-		ime.activateTool(tool);			
-		button.addClass("active");
-		GUIController.addEventListener('activatetool', dt);	
-	};
-	
-	tb.onDeactivate = () => {	
-		// tool is automaticaly deactivated by IME
-		button.removeClass("active");
-		GUIController.removeEventListener('activatetool', dt);
-	};
-	
-	tb.onEnable = () => button.prop("disabled", false);
-	tb.onDisable = () => button.prop("disabled", true);	
-	
-	button.click(function () {
-		tb.activate();
-	});
-	
-	return button;
-}
+export { GUI_HELPERS, GUI_TOOLS };
 
-/**
- * Creates Helper button. Button is stored in GUIController.controls.
- * Sets button callbacks and listeners.
- * Returns jquery object.
- */
-function createHelperButton(tool, button) {
-			
-	var tb = new ToggleButton();
-	
-	GUIController.controls.push(tb);
-	
-	GUIController.addEventListener('enablecontrols', e => tb.enable(e));
-	GUIController.addEventListener('disablecontrols', e => tb.disable(e));
-		
-	tb.onActivate = () => {
-		ime.activateHelper(tool);		
-		button.addClass("active");
-	};	
-	
-	tb.onDeactivate = () => {		
-		ime.deactivateHelper(tool);
-		button.removeClass("active");
-	};
-	
-	tb.onEnable = () => button.prop("disabled", false);
-	tb.onDisable = () => button.prop("disabled", true);	
-	
-	button.click(function () {
-		tb.click();
-	});
-	
-	return button;
-}
-
-/**
- * Creates button's HTML code.
- * Returns jquery object.
- */
-function createButtonHTML(id, name) {
-	var button = $("<button>", {class: "form-control", type: "button", id: id, text: name});	
-	return button;
-}
-
-});   
