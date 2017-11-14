@@ -8,122 +8,113 @@
  */
 
 //MUST:
-//TODO Refactor methods out of DOC READY and to MODULES  ---- SAME ABSTRACTION
 //TODO Crop class
 //TODO UNDO
 //TODO Zoom
-//TODO GUIController class
-//TODO factory for components UTILITY MODULE
+//FIXME GUIController class
+//FIXME Code style
 
 //SHOULD:
-//TODO * builder for controls
-//
 //TODO * debug log class
 
 //TIPS:
 //TODO first test then refactor
 
-
 import { ImageEditorController } from './lib/ImageEditorController.js';
 import { EventTarget } from './lib/EventTarget.js';
 import { Grid } from './lib/Grid.js';
-import { ToggleButton } from './lib/ToggleButton.js';
 import { Meter } from './lib/Meter.js';
 import { NullTool } from './lib/NullTool.js';
-import { Factory } from './lib/Factory.js';
+import { ToggleButton } from './lib/ToggleButton.js';
+import { createToolButton, createHelperButton } from './lib/Utility.js';
 
-const GUI_HELPERS = "#controlsForm fieldset div.form-group";
-const GUI_TOOLS = "#controlsForm fieldset div.form-group";
+const IME_TOOLS = "#ime-tools";
+const IME_HELPERS = "#ime-helpers";
 
+const HELPER_BUTTON = '<button type="button" class="btn btn-success btn-sm">text</button>';
+const TOOL_BUTTON = '<button type="button" class="btn btn-info btn-sm">text</button>';
 
-var mess = "Your browser does not support the HTML5 canvas tag.";
-var $canvas2d = $("<canvas>", {id: "canvas2d", text: mess});
-var ime = new ImageEditorController($canvas2d[0]);	
+const $CANVAS = $("<canvas>", {text: "Your browser does not support the HTML5 canvas tag."});
+const IME = new ImageEditorController($CANVAS[0]);
+const GUI = new EventTarget();
+GUI.controls = [];
+const reader = new FileReader();
 
+// Init image editor when document ready.
 $(function(){
-   	   	
-   	// after doc is ready document.body.appendChild(canvas2d);
-   	//var canvas2d = document.getElementById("canvas2d");
    	
-   	$canvas2d.appendTo("#canvasPlaceHolder");
-   	
-   	var canvas2d = $canvas2d[0];
-   
-   	var fileForm = document.getElementById("fileForm");
-   	var fileInput = document.getElementById("fileInput");
+	initIME();
+	initOpenFile();
+});
+
+function initIME() {
 		
-	var reader = new FileReader();
+	// CREATE GRID HELPER
+	var grid = new Grid(IME.canvas, 3, 3);		
+	IME.addHelper(grid);
+	grid.addEventListener('change', e => IME.onChange(e));
+	var gridIcon = '<span class="glyphicon glyphicon-th" aria-hidden="true"></span>';	
+	var $gridButton = $(HELPER_BUTTON).html(gridIcon).appendTo(IME_HELPERS);
+	createHelperButton(IME, GUI, grid, $gridButton);
+		
+	// CREATE METER TOOL
+	var meter = new Meter(IME);	
+	IME.addTool(meter);
+	meter.addEventListener('change', e => IME.onChange(e));	
+	var $meterButton = $(TOOL_BUTTON).text("Meter").appendTo(IME_TOOLS);
+	createToolButton(IME, GUI, meter, $meterButton);
+		
+	// CREATE CURSOR TOOL
+	var cursor = new NullTool();	
+	IME.addTool(cursor);	
+	var $cursorButton = $(TOOL_BUTTON).text("Cursor").appendTo(IME_TOOLS);
+	createToolButton(IME, GUI, cursor, $cursorButton);
 	
-	var GUIController = new EventTarget();
-	GUIController.controls = [];
-			
-	//var ime = new ImageEditorController(canvas2d);
+	// select cursor tool by default
+	$cursorButton.trigger("click");
 	
-	// Grid helper init	ime.addHelper(createGrid(ime.canvas, 3, 3)); //thats all
-	var grid = new Grid(ime.canvas, 3, 3);	
-	ime.addHelper(grid);
-	grid.addEventListener('change', e => ime.onChange(e));
-	createHelperButton(grid, createButtonHTML('gridHelper', 'Grid')).appendTo("#controlsForm fieldset div.form-group");
+	// place canvas to page
+	$CANVAS.appendTo("#canvas-placeholder");
 	
-	// Meter tool init ************ factory method createMeter(ime, id, name) return jquery or dom
-	var meter = new Meter(ime);
-	ime.addTool(meter);
-	meter.addEventListener('change', e => ime.onChange(e));
-	createToolButton(meter, createButtonHTML('meterTool', 'Meter')).appendTo("#controlsForm fieldset div.form-group");
+	// enable contols when file loaded
+	IME.addEventListener('imageload', e => GUI.dispatchEvent({type:'enablecontrols'}));
 	
-	// Meter tool 2	init
-	var meter2 = new Meter(ime);
-	ime.addTool(meter2);
-	meter2.addEventListener('change', e => ime.onChange(e));
-	createToolButton(meter, createButtonHTML('meterTool2', 'Meter')).appendTo("#controlsForm fieldset div.form-group");
-	
-	// Cursor/Null tool
-	var cursor = new NullTool();
-	ime.addTool(cursor);	
-	createToolButton(cursor, createButtonHTML('cursorTool', 'Cursor')).appendTo("#controlsForm fieldset div.form-group");
-	
-	// activate cursor tool as default
-	$("#cursorTool").trigger("click");
-			
 	// set default image
-	ime.setImageSource("/static/blank.jpg");
+	IME.setImageSource("/static/blank.jpg");
+}
+	
+function initOpenFile() {	
 		
-	// enable controls when image loaded
-	ime.addEventListener('imageload', e => GUIController.dispatchEvent({type:"enablecontrols"}));
-	
-	// prevent submit action
-	fileForm.onsubmit = function(e) {e.preventDefault();}
-	
-	// on file select				
-	fileInput.onchange = function(e) {
+	// open file form actions
+	$("#ime-openfile")
+		.submit(function(e) {
+			e.preventDefault();
+		})		
+		.change(function(e) {
 			
 		// disable controls on file loading
-		GUIController.dispatchEvent({type:"disablecontrols"});
+		GUI.dispatchEvent({type:'disablecontrols'});
 		
 		// read file
-		reader.readAsDataURL(fileInput.files[0]);
-	}
+		reader.readAsDataURL($("#ime-openfile input")[0].files[0]);
+		});
 	
 	// on file load
 	reader.onload = function(){
   		var dataURL = reader.result;
   		
   		// validate file type
-  		if (fileInput.files[0].type.substring(0, 5) == 'image') {	  			
+  		if ($("#ime-openfile input")[0].files[0].type.substring(0, 5) == 'image') {	  			
   			
   			// pass src to editor
-  			ime.setImageSource(dataURL);
+  			IME.setImageSource(dataURL);
   		} else {
   			
   			// pass src to editor, displays warning image
-  			ime.setImageSource("/static/invalid.jpg");
-  		}	
-  		
-  		// reset form when file is loaded
-  		fileForm.reset();
+  			IME.setImageSource("/static/invalid.jpg");
+  		}	  		
 	}
+}
 
-});
 
-export { GUI_HELPERS, GUI_TOOLS };
 

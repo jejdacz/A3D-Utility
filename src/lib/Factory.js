@@ -1,6 +1,10 @@
 /*** Factory methods ***/
 
-import { GUI_HELPERS } from '../main.js';
+import { IME_TOOLS, IME_HELPERS, HELPER_BUTTON, TOOL_BUTTON } from '../main.js';
+import { Grid } from './Grid.js';
+import { Meter } from './Meter.js';
+import { NullTool } from './NullTool.js';
+import { ToggleButton } from './ToggleButton.js';
 
 class Factory {
 	constructor(ime, gui) {
@@ -81,24 +85,41 @@ class Factory {
 	
 		return button;
 	}
-
-	/**
-	 * Creates button's HTML code.
-	 * Returns jquery object.
-	 */
-	createButtonHTML(id, name) {
-		var $button = $("<button>", {class: "form-control", type: "button", id: id, text: name});	
+	/*	
+	createGrid(cols, rows) {
+		var grid = new Grid(this.ime.canvas, cols, rows);
+		
+		this.ime.addHelper(grid);
+		grid.addEventListener('change', e => this.ime.onChange(e));
+		
+		var $button = $(HELPER_BUTTON).text("Grid");
+		this.createHelperButton(grid, $button).appendTo(IME_HELPERS);
+		
 		return $button;
 	}
 	
-	createGrid(cols, rows) {
-		var grid = new Grid(this.ime.canvas, cols, rows);		
-		grid.addEventListener('change', e => this.ime.onChange(e));
+	createMeter() {
+		var meter = new Meter(this.ime);
 		
-		var $button = this.createButtonHTML('gridHelper', 'Grid');
-		this.createHelperButton(grid, $button).appendTo(GUI_HELPERS);
-		return { tool:grid , control:$button };
-	}	
+		this.ime.addTool(meter);
+		meter.addEventListener('change', e => this.ime.onChange(e));
+		
+		var $button = $(TOOL_BUTTON).text("Meter");
+		this.createToolButton(meter, $button).appendTo(IME_TOOLS);
+		
+		return $button;
+	}
+	
+	createCursor() {
+		var cursor = new NullTool();
+		
+		this.ime.addTool(cursor);		
+		
+		var $button = $(TOOL_BUTTON).text("Cursor");
+		this.createToolButton(cursor, $button).appendTo(IME_TOOLS);
+		
+		return $button;
+	}	*/	
 }
 
 export { Factory };
