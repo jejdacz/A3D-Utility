@@ -8,6 +8,8 @@
  */
 
 //MUST:
+//TODO simple control system
+//TODO create() factory static method
 //TODO Crop class
 //TODO UNDO
 //TODO Zoom
@@ -25,22 +27,68 @@ import { EventTarget } from './lib/EventTarget.js';
 import { Grid } from './lib/Grid.js';
 import { Meter } from './lib/Meter.js';
 import { NullTool } from './lib/NullTool.js';
-import { ToggleButton } from './lib/ToggleButton.js';
-import { createToolButton, createHelperButton } from './lib/Utility.js';
 
 const IME_TOOLS = "#ime-tools";
 const IME_HELPERS = "#ime-helpers";
 
-const HELPER_BUTTON = '<button type="button" class="btn btn-success btn-sm">text</button>';
-const TOOL_BUTTON = '<button type="button" class="btn btn-info btn-sm">text</button>';
+const HELPER_BUTTON = "<button type=\"button\" class=\"btn btn-success btn-sm\">text</button>";
+const TOOL_BUTTON = "<button type=\"button\" class=\"btn btn-info btn-sm\">text</button>";
 
 const $CANVAS = $("<canvas>", {text: "Your browser does not support the HTML5 canvas tag."});
 const IME = new ImageEditorController($CANVAS[0]);
+
+// GUI OBJECT SETUP
 const GUI = new EventTarget();
-GUI.controls = [];
+GUI.controls = {};
+GUI.disableControls = function(){
+	$(IME_TOOLS + " button").prop("disabled", true);
+	$(IME_HELPERS + " button").prop("disabled", true);
+}
+
+GUI.enableControls = function(){
+	$(IME_TOOLS + " button").prop("disabled", false);
+	$(IME_HELPERS + " button").prop("disabled", false);
+}
+
+
+// jQuery custom function
+$.fn.myFunc = function() {
+	$(this).addCalss('my');
+	return this;
+}
+
+// BUTTON'S CALLBACKS
+const clickTool = function(obj) {
+	console.log('but clicked');
+	var tool = obj.data.tool;
+	if ($(this).hasClass("active")) {
+		console.log('but is active');
+		return;
+	} else {
+		$(IME_TOOLS + " button").removeClass("active");
+		IME.activateTool(tool);
+		$(this).addClass("active");
+		console.log('but activated');
+	}
+}
+
+const clickHelper = function(obj) {
+	console.log('hlp clicked');
+	var helper = obj.data.helper;
+	if ($(this).hasClass("active")) {
+		IME.deactivateHelper(helper);
+		$(this).removeClass("active");
+		console.log('hlp deactivated');
+	} else {		
+		IME.activateHelper(helper);
+		$(this).addClass("active");
+		console.log('hlp activated');
+	}
+}
+
 const reader = new FileReader();
 
-// Init image editor when document ready.
+// INIT ON DOCUMENT READY
 $(function(){
    	
 	initIME();
@@ -50,34 +98,38 @@ $(function(){
 function initIME() {
 		
 	// CREATE GRID HELPER
-	var grid = new Grid(IME.canvas, 3, 3);		
-	IME.addHelper(grid);
+	var grid = new Grid(IME.canvas, 3, 3);
+	IME.addHelper(grid); // draw()
 	grid.addEventListener('change', e => IME.onChange(e));
 	var gridIcon = '<span class="glyphicon glyphicon-th" aria-hidden="true"></span>';	
-	var $gridButton = $(HELPER_BUTTON).html(gridIcon).appendTo(IME_HELPERS);
-	createHelperButton(IME, GUI, grid, $gridButton);
-		
+	$(HELPER_BUTTON)
+		.html(gridIcon)
+		.click({helper:grid}, clickHelper)
+		.appendTo(IME_HELPERS);
+	
 	// CREATE METER TOOL
-	var meter = new Meter(IME);	
-	IME.addTool(meter);
+	var meter = new Meter(IME);
+	IME.addTool(meter);	
 	meter.addEventListener('change', e => IME.onChange(e));	
-	var $meterButton = $(TOOL_BUTTON).text("Meter").appendTo(IME_TOOLS);
-	createToolButton(IME, GUI, meter, $meterButton);
-		
+	$(TOOL_BUTTON)
+		.text("Meter")
+		.click({tool:meter}, clickTool)
+		.appendTo(IME_TOOLS);
+			
 	// CREATE CURSOR TOOL
 	var cursor = new NullTool();	
 	IME.addTool(cursor);	
-	var $cursorButton = $(TOOL_BUTTON).text("Cursor").appendTo(IME_TOOLS);
-	createToolButton(IME, GUI, cursor, $cursorButton);
-	
-	// select cursor tool by default
-	$cursorButton.trigger("click");
+	$(TOOL_BUTTON)
+		.text("Cursor")
+		.click({tool:cursor}, clickTool)
+		.appendTo(IME_TOOLS)
+		.trigger("click"); // activated by default
 	
 	// place canvas to page
 	$CANVAS.appendTo("#canvas-placeholder");
 	
 	// enable contols when file loaded
-	IME.addEventListener('imageload', e => GUI.dispatchEvent({type:'enablecontrols'}));
+	IME.addEventListener('imageload', e => GUI.enableControls());
 	
 	// set default image
 	IME.setImageSource("/static/blank.jpg");
@@ -93,7 +145,7 @@ function initOpenFile() {
 		.change(function(e) {
 			
 		// disable controls on file loading
-		GUI.dispatchEvent({type:'disablecontrols'});
+		GUI.disableControls();
 		
 		// read file
 		reader.readAsDataURL($("#ime-openfile input")[0].files[0]);
