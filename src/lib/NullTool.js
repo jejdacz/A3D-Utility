@@ -4,11 +4,12 @@
  * @author Marek Mego
  */
  
-import { ToolBase } from './ToolBase.js';
+import { ToolBase } from "./ToolBase.js";
  
-class NullTool extends ToolBase {
-	constructor() {
-		super();
+class NullTool extends ToolBase {	
+	
+	static create() {
+		return new NullTool();
 	}
 	
 	activate(){}

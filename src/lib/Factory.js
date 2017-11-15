@@ -1,10 +1,10 @@
 /*** Factory methods ***/
 
-import { IME_TOOLS, IME_HELPERS, HELPER_BUTTON, TOOL_BUTTON } from '../main.js';
-import { Grid } from './Grid.js';
-import { Meter } from './Meter.js';
-import { NullTool } from './NullTool.js';
-import { ToggleButton } from './ToggleButton.js';
+import { IME_TOOLS, IME_HELPERS, HELPER_BUTTON, TOOL_BUTTON } from "../main.js";
+import { Grid } from "./Grid.js";
+import { Meter } from "./Meter.js";
+import { NullTool } from "./NullTool.js";
+import { ToggleButton } from "./ToggleButton.js";
 
 class Factory {
 	constructor(ime, gui) {
@@ -23,9 +23,9 @@ class Factory {
 	
 		this.gui.controls.push(tb);
 	
-		this.gui.addEventListener('enablecontrols', e => tb.enable(e));
-		this.gui.addEventListener('disablecontrols', e => tb.disable(e));
-		tb.addEventListener('activatetool', e => this.gui.dispatchEvent(e));
+		this.gui.addEventListener("enablecontrols", e => tb.enable(e));
+		this.gui.addEventListener("disablecontrols", e => tb.disable(e));
+		tb.addEventListener("activatetool", e => this.gui.dispatchEvent(e));
 		
 		var dt = () => tb.deactivate();
 	
@@ -33,13 +33,13 @@ class Factory {
 			tb.dispatchEvent({type:"activatetool"});		
 			this.ime.activateTool(tool);			
 			button.addClass("active");
-			this.gui.addEventListener('activatetool', dt);	
+			this.gui.addEventListener("activatetool", dt);	
 		};
 	
 		tb.onDeactivate = () => {	
 			// tool is automaticaly deactivated by IME
 			button.removeClass("active");
-			this.gui.removeEventListener('activatetool', dt);
+			this.gui.removeEventListener("activatetool", dt);
 		};
 	
 		tb.onEnable = () => button.prop("disabled", false);
@@ -63,8 +63,8 @@ class Factory {
 	
 		this.gui.controls.push(tb);
 	
-		this.gui.addEventListener('enablecontrols', e => tb.enable(e));
-		this.gui.addEventListener('disablecontrols', e => tb.disable(e));
+		this.gui.addEventListener("enablecontrols", e => tb.enable(e));
+		this.gui.addEventListener("disablecontrols", e => tb.disable(e));
 		
 		tb.onActivate = () => {
 			this.ime.activateHelper(tool);		
@@ -90,7 +90,7 @@ class Factory {
 		var grid = new Grid(this.ime.canvas, cols, rows);
 		
 		this.ime.addHelper(grid);
-		grid.addEventListener('change', e => this.ime.onChange(e));
+		grid.addEventListener("change", e => this.ime.onChange(e));
 		
 		var $button = $(HELPER_BUTTON).text("Grid");
 		this.createHelperButton(grid, $button).appendTo(IME_HELPERS);
@@ -102,7 +102,7 @@ class Factory {
 		var meter = new Meter(this.ime);
 		
 		this.ime.addTool(meter);
-		meter.addEventListener('change', e => this.ime.onChange(e));
+		meter.addEventListener("change", e => this.ime.onChange(e));
 		
 		var $button = $(TOOL_BUTTON).text("Meter");
 		this.createToolButton(meter, $button).appendTo(IME_TOOLS);

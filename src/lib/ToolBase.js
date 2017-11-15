@@ -4,7 +4,7 @@
  * @author Marek Mego
  */
  
-import { EventTarget } from './EventTarget.js';
+import { EventTarget } from "./EventTarget.js";
 
 class ToolBase extends EventTarget {
 	constructor() {				
@@ -18,7 +18,7 @@ class ToolBase extends EventTarget {
 	
 	activate() {
 		if (this._active == true) {
-			console.warn('Activating active tool!');
+			console.warn("Activating active tool!");
 			return;
 		}		
 		this.onActivate();
@@ -27,7 +27,7 @@ class ToolBase extends EventTarget {
 	
 	deactivate() {
 		if (this._active == false) {
-			console.warn('Deactivating non-active tool!');
+			console.warn("Deactivating non-active tool!");
 			return;
 		}		
 		this.onDeactivate();

@@ -4,7 +4,7 @@
  * @author Marek Mego 
  */
  
-import { EventTarget } from './EventTarget.js';
+import { EventTarget } from "./EventTarget.js";
 
 class ToggleButton extends EventTarget {
 	constructor(){		
@@ -17,13 +17,17 @@ class ToggleButton extends EventTarget {
 		this._onDeactivateCallback = function(){};		 
 	}
 	
+	static create() {
+		return new ToggleButton();
+	}
+	
 	set onEnable(c) {this._onEnableCallback = c;}	
 	set onDisable(c) {this._onDisableCallback = c;}	
 	set onActivate(c) {this._onActivateCallback = c;}	
 	set onDeactivate(c) {this._onDeactivateCallback = c;}
 		
 	click() {
-		console.log('tb clicked');
+		console.log("tb clicked");
 		if (this._enabled) {
 			if (this._activated) {
 				this.deactivate();
@@ -37,7 +41,7 @@ class ToggleButton extends EventTarget {
 		if (this._enabled) {
 			return;
 		}
-		console.log('tb enabled');
+		console.log("tb enabled");
 		this._enabled = true;
 		this._onEnableCallback();
 	}
@@ -46,7 +50,7 @@ class ToggleButton extends EventTarget {
 		if (!this._enabled) {
 			return;
 		}
-		console.log('tb disabled');
+		console.log("tb disabled");
 		this._enabled = false;
 		this._onDisableCallback();
 	}
@@ -55,7 +59,7 @@ class ToggleButton extends EventTarget {
 		if (this._activated) {
 			return;
 		}
-		console.log('tb activated');
+		console.log("tb activated");
 		this._activated = true;
 		this._onActivateCallback();		
 	}
@@ -64,7 +68,7 @@ class ToggleButton extends EventTarget {
 		if (!this._activated) {
 			return;
 		}
-		console.log('tb deactivated');
+		console.log("tb deactivated");
 		this._activated = false;
 		this._onDeactivateCallback();
 	}	

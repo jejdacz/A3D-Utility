@@ -6,14 +6,14 @@
 
 class EventTarget {
 	constructor() {
-		this.listeners = {};
-	}
+		this.listeners = {};		
+	}	
 	
 	addEventListener(type, callback) {
 		if (!(type in this.listeners)) {
 			this.listeners[type] = [];
 		}
-		console.log('add lis ' + type);
+		console.log("add lis " + type);
 		this.listeners[type].push(callback);
 	}
 	
@@ -26,7 +26,7 @@ class EventTarget {
   		for (var i = 0, l = stack.length; i < l; i++) {
     		if (stack[i] === callback){
       		stack.splice(i, 1);
-      		console.log('rem lis ' + type);
+      		console.log("rem lis " + type);
       		return;
     		}
   		}
@@ -35,7 +35,7 @@ class EventTarget {
 	
 	dispatchEvent(event) {
 		if (!(event.type in this.listeners)) {
-			return this;
+			return true;
 		}
 		var stack = this.listeners[event.type];
 		
@@ -43,7 +43,7 @@ class EventTarget {
 			stack[i].call(this, event);
 		}
 		
-		return this;
+		return !event.defaultPrevented;
 	}
 }
 

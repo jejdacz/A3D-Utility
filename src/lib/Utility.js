@@ -1,6 +1,6 @@
 /*** Factory methods ***/
 
-import { ToggleButton } from './ToggleButton.js';
+import { ToggleButton } from "./ToggleButton.js";
 	
 /**
  * Creates Tool button. Button is stored in this.gui.controls.
@@ -13,9 +13,9 @@ function createToolButton(ime, gui, tool, button) {
 
 	gui.controls.push(tb);
 
-	gui.addEventListener('enablecontrols', e => tb.enable(e));
-	gui.addEventListener('disablecontrols', e => tb.disable(e));
-	tb.addEventListener('activatetool', e => gui.dispatchEvent(e));
+	gui.addEventListener("enablecontrols", e => tb.enable(e));
+	gui.addEventListener("disablecontrols", e => tb.disable(e));
+	tb.addEventListener("activatetool", e => gui.dispatchEvent(e));
 	
 	var dt = () => tb.deactivate();
 
@@ -23,13 +23,13 @@ function createToolButton(ime, gui, tool, button) {
 		tb.dispatchEvent({type:"activatetool"});		
 		ime.activateTool(tool);			
 		button.addClass("active");
-		gui.addEventListener('activatetool', dt);	
+		gui.addEventListener("activatetool", dt);	
 	};
 
 	tb.onDeactivate = () => {	
 		// tool is automaticaly deactivated by IME
 		button.removeClass("active");
-		gui.removeEventListener('activatetool', dt);
+		gui.removeEventListener("activatetool", dt);
 	};
 
 	tb.onEnable = () => button.prop("disabled", false);
@@ -53,8 +53,8 @@ function createHelperButton(ime, gui, tool, button) {
 
 	gui.controls.push(tb);
 
-	gui.addEventListener('enablecontrols', e => tb.enable(e));
-	gui.addEventListener('disablecontrols', e => tb.disable(e));
+	gui.addEventListener("enablecontrols", e => tb.enable(e));
+	gui.addEventListener("disablecontrols", e => tb.disable(e));
 	
 	tb.onActivate = () => {
 		ime.activateHelper(tool);		

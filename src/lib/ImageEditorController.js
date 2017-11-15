@@ -4,13 +4,13 @@
  * @author Marek Mego
  */
 
-import { EventTarget } from './EventTarget.js';
+import { EventTarget } from "./EventTarget.js";
 			
 class ImageEditorController extends EventTarget{
 	constructor(canvas) {
 		super();
 		this._canvas = canvas;
-		this._ctx = canvas.getContext('2d');
+		this._ctx = canvas.getContext("2d");
 		this._originalImage = new Image(); // backup for undo
 		this._image = new Image(); // image to edit
 		this._helpers = []; // multiple helpers can be active at once
@@ -19,9 +19,12 @@ class ImageEditorController extends EventTarget{
 		this._image.onload = (e) => this.onImageLoad(e);
 	}
 	
+	static create(canvas) {
+		return new ImageEditorController(canvas);
+	}
+		
 	get canvas() { return this._canvas;}
 	get ctx() { return this._ctx;}
-	
 	
 	setImageSource(src) {
 		this._image.src = src;
@@ -32,7 +35,7 @@ class ImageEditorController extends EventTarget{
 	}
 			
 	activateTool(tool) {
-		console.log('activating tool ' + tool);
+		console.log("activating tool " + tool);
 		// notify about tool override		
 		if (this._activeTool != null) {
 			this.dispatchEvent({type:"overridetool"});
@@ -47,9 +50,9 @@ class ImageEditorController extends EventTarget{
 	}
 	
 	deactivateTool(tool) {
-		console.log('deactivating tool' + tool);		
+		console.log("deactivating tool" + tool);		
 		if (this._activeTool == null) {
-			console.warn('No tool to deactivate!');
+			console.warn("No tool to deactivate!");
 		} else {
 			this._activeTool.deactivate();
 			this._activeTool = null;						
@@ -84,7 +87,7 @@ class ImageEditorController extends EventTarget{
 	}
 	
 	onChange(e) {
-		console.log('ime onchange');
+		console.log("ime onchange");
 		this.draw();
 	}
 		

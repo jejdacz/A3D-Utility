@@ -4,7 +4,7 @@
  * @author Marek Mego
  */	
 
-import { EventTarget } from './EventTarget.js';
+import { EventTarget } from "./EventTarget.js";
 	
 class Grid extends EventTarget{
 	constructor(canvas, rows, cols) {
@@ -14,7 +14,11 @@ class Grid extends EventTarget{
 		this._cols = cols;
 		this._lineWidth = 2.0;
 		this._active = false;				
-		this._style = 'rgba(0, 0, 0, 0.75)';
+		this._style = "rgba(0, 0, 0, 0.75)";
+	}
+	
+	static create(canvas, rows, cols) {
+		return new Grid(canvas, rows, cols);
 	}
 	
 	get canvas() {
