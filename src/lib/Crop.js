@@ -22,9 +22,7 @@ class Crop extends ToolBase {
 	constructor(ime) {
 		super();
 		this._ime = ime;		
-		this._cpDragged = false;
-		this._recDragged = false;
-		this._activeCp = {};
+		this._activeCp;
 		this._cpRect = new CPRectangle();
 		this._cursorPrevPos = new Point(0,0);
 		this._onMouseMoveAction;
@@ -51,9 +49,6 @@ class Crop extends ToolBase {
 		
 	onActivate() {		
 		console.log('crop activated');
-		// activate mousedown listener
-		// draw control rectangle	
-				
 		this._cpRect.setBoundary(this._ime.canvas.width, this._ime.canvas.height);		
 		this._enableMouseDown();
 		this._enableMouseUp();
@@ -62,18 +57,16 @@ class Crop extends ToolBase {
 	}
 	
 	onDeactivate() {
-		// if cp dragged drop it
-				
-		// deactivate mouse listeners
 		this._disableMouseDown();
 		this._disableMouseUp();
 		this._disableMouseMove();
 		this._drawable = false;
+		//if (typeof(this._activeCp) != "undefined") this._activeCp.setActive(false);
 		this.onChange();	
 	}
 	
 	_cpMove(e) {
-		this._cpRect.moveCp(this._activeCp.index, e.offsetX, e.offsetY);
+		this._activeCp.move(e.offsetX, e.offsetY);
 	}
 	
 	_rectMove(e) {
@@ -86,14 +79,12 @@ class Crop extends ToolBase {
 	
 	onMouseDown(e) {
 		console.log('crop mouse down');
-		// if cp hit drag it
-		
 		var cp = this._cpRect.inCpArea(e.offsetX, e.offsetY);
 		console.log(cp.toString());	
 		if (cp) {
-			console.log('crop cp hit');
-			//this._cpDragged = true;
-			this._activeCp = cp;
+			console.log('crop cp hit');			
+			//cp.setActive(true);
+			this._activeCp = cp;			
 			this._onMouseMoveAction = (e) => this._cpMove(e);
 			this._enableMouseMove();			
 		} else {
@@ -107,7 +98,8 @@ class Crop extends ToolBase {
 	}
 	
 	onMouseUp(e) {
-		console.log('crop mouseup');		
+		console.log('crop mouseup');
+		//this._activeCp.setActive(false);	
 		this._disableMouseMove();
 		this.onChange();						 
 	}
@@ -121,41 +113,27 @@ class Crop extends ToolBase {
 		this.dispatchEvent({type:"change"});
 	}
 	
+	crop() {
+		this._ime.imageDC.sx += this._cpRect.getPosition().getX();
+		this._ime.imageDC.sy += this._cpRect.getPosition().getY();
+		this._ime.imageDC.sw = this._cpRect.getWidth();
+		this._ime.imageDC.sh = this._cpRect.getHeight();
+		this._ime.imageDC.dw = this._cpRect.getWidth();
+		this._ime.imageDC.dh = this._cpRect.getHeight();
+		this._ime.canvas.width = this._cpRect.getWidth();
+		this._ime.canvas.height = this._cpRect.getHeight();
+		this._cpRect.setBoundary(this._ime.canvas.width, this._ime.canvas.height);
+		this.onChange();
+	}										
+	
 	draw() {		
 		if (this.drawable) {
-			console.log('draw crop');			
-			// draw control points
-			this._ime.ctx.setLineDash([4, 2]);
-			this._ime.ctx.lineWidth = 1;		
-			this._ime.ctx.strokeStyle = "rgba(0, 0, 0, 0.6)";
-			
-			
-			// cprect.draw()
-			this._ime.ctx.strokeRect(
-				this._cpRect.getPosition().getX(),
-				this._cpRect.getPosition().getY(),
-				this._cpRect.getWidth(),
-				this._cpRect.getHeight(),
-			);
-			
-			this._ime.ctx.setLineDash([0, 0]);
-			
-			this._ime.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-			this._cpRect.getCpArray().forEach((element) => {							
-				this._ime.ctx.fillRect(
-					element.getX() - this._cpRect.getCpSize() / 2,
-					element.getY() - this._cpRect.getCpSize() / 2,
-					this._cpRect.getCpSize(),
-					this._cpRect.getCpSize()
-				);
-				console.log('drawing cp at x:' + element.getX() + ' y:' + element.getY());
-				
-			});
-									
-		}
+			console.log('draw crop');		
 		
-	}
-	
+			this._cpRect.draw(this._ime.ctx);
+									
+		}		
+	}	
 }
 
 export { Crop };

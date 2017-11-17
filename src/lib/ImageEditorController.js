@@ -13,6 +13,14 @@ class ImageEditorController extends EventTarget{
 		this._ctx = canvas.getContext("2d");
 		this._originalImage = new Image(); // backup for undo
 		this._image = new Image(); // image to edit
+		this.imageDC = {src:this._image,
+														sx:0, sy:0,
+														sw:this._image.width,
+														sh:this._image.height,
+														dx:0, dy:0,
+														dw:this._image.width,
+														dh:this._image.height
+														}; 
 		this._helpers = []; // multiple helpers can be active at once
 		this._tools = []; // only one tool can be active at the moment
 		this._activeTool = null;	
@@ -75,21 +83,37 @@ class ImageEditorController extends EventTarget{
 	/**
 	 * Event handlers.
 	 */	 	
-	onImageLoad(e) {		
-		this._canvas.height = this._image.height;
-		this._canvas.width = this._image.width;
+	onImageLoad(e) {
+		
+		this.resetImage();
+		
 		this.dispatchEvent({type:"imageload"});		
-		// restart tool
-		if (this._activeTool) {
-			this._activeTool.deactivate();
-			this._activeTool.activate();			
-		}		
-		this.onChange({type:"change"});
+		
 	}
 	
 	onChange(e) {
 		console.log("ime onchange");
 		this.draw();
+	}
+		
+	resetImage() {
+		this.imageDC.sx = 0;
+		this.imageDC.sy = 0;				
+		this.imageDC.sw = this._image.width;
+		this.imageDC.sh = this._image.height;
+		this.imageDC.dx = 0;
+		this.imageDC.dy = 0;
+		this.imageDC.dw = this._image.width;
+		this.imageDC.dh = this._image.height;
+		this._canvas.width = this._image.width;
+		this._canvas.height = this._image.height;
+		
+		if (this._activeTool) {
+			this._activeTool.deactivate();
+			this._activeTool.activate();			
+		}
+		
+		this.onChange({type:"change"});
 	}
 		
 	/**
@@ -100,8 +124,17 @@ class ImageEditorController extends EventTarget{
 		this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
 		
 		// draw image
-		this._ctx.drawImage(this._image,0,0);
-		
+		this._ctx.drawImage(this.imageDC.src,
+												this.imageDC.sx,
+												this.imageDC.sy,
+												this.imageDC.sw,
+												this.imageDC.sh,
+												this.imageDC.dx,
+												this.imageDC.dy,
+												this.imageDC.dw,
+												this.imageDC.dh,
+												);
+												
 		// draw helpers
 		for (var i = 0, l = this._helpers.length; i < l; i++) {
 			this._helpers[i].draw();
@@ -116,3 +149,4 @@ class ImageEditorController extends EventTarget{
 }
 
 export { ImageEditorController };
+

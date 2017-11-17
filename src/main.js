@@ -83,8 +83,7 @@ $(function(){
 /**
  * Image editor initialization.
  */
-function initIME() {
-	
+function initIME() {	
 	/* GUI setup */
 	gui.disableControls = function(){
 		$(IME_TOOLS + " button").prop("disabled", true);
@@ -132,6 +131,16 @@ function initIME() {
 		.click({tool:cursor}, clickTool)
 		.appendTo(IME_TOOLS)
 		.trigger("click"); // activated by default
+		
+	$(HELPER_BUTTON)
+		.text("CropOk")
+		.click( e => crop.crop(e) )
+		.appendTo(IME_HELPERS);
+		
+	$(HELPER_BUTTON)
+		.text("ResetImage")
+		.click( e => ime.resetImage(e) )
+		.appendTo(IME_HELPERS);
 	
 	// place canvas to page
 	$CANVAS.appendTo("#canvas-placeholder");
@@ -146,8 +155,7 @@ function initIME() {
 /**
  * Initialize image file opening form.
  */	
-function initOpenFile() {
-		
+function initOpenFile() {		
 	// open file form actions
 	$(IME_OPENFILE)
 		.submit(function(e) {
@@ -155,12 +163,13 @@ function initOpenFile() {
 			e.preventDefault();
 		})		
 		.change(function(e) {
-			
+		
 			// disable controls on file loading
 			gui.disableControls();
-		
+			
 			// read file
 			reader.readAsDataURL($(IME_OPENFILE + " input")[0].files[0]);
+			
 		});
 	
 	// on file load
@@ -176,7 +185,10 @@ function initOpenFile() {
   			
   			// pass src to editor, displays warning image
   			ime.setImageSource("/static/invalid.jpg");
-  		}		
+  		}
+  		
+  		// clear information about file from the form
+  		$(IME_OPENFILE)[0].reset();		
 	}
 }
 

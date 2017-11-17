@@ -12,16 +12,22 @@
 import { Point } from "./Point.js";
 
 class ControlPoint extends Point{
-	constructor(){
-		super();		
+	constructor(x, y){
+		super(x, y);		
+		this.moveFn;		
+		this._active = false;		
+	}	
+	
+	setActive(val) {
+		this._active = val;
 	}
 	
-	onChange() {
-		// callback set width left align
+	isActive() {
+		return this._active;
 	}
 	
-	draw() {
-	
+	move(x, y) {
+		this.moveFn(x, y);
 	}
 }
 
@@ -29,49 +35,76 @@ class ControlPoint extends Point{
 class CPRectangle {
 	constructor() {
 		this._position = new Point(0,0);
-		this._cpArray = [new Point(0,0), new Point(100,0), new Point(0,100), new Point(100,100)];
+		this._cpArray = [];		
 		this._cpSize = 10;		
-		this._width = 100;
-		this._height = 100;
-		this._boundary = new Point(0,0);				
+		this._width = 0;
+		this._height = 0;
+		this._boundary = new Point(0,0);
+		
+		this._initCp();				
 	}
 		
 	setWidth(val) {
-		this._cpArray[1].setX(this._position.getX() + val);
-		this._cpArray[3].setX(this._position.getX() + val);
-		this._width = val;
+		if (this._validate(this._position.getX(), this._position.getY(), val, this._height)) {
+			this._cpArray[1].setX(this._position.getX() + val);
+			this._cpArray[3].setX(this._position.getX() + val);
+			this._width = val;
+		}
 	}
 	
 	setHeight(val) {
-		this._cpArray[2].setY(this._position.getY() + val);
-		this._cpArray[3].setY(this._position.getY() + val);
-		this._height = val;
+		if (this._validate(this._position.getX(), this._position.getY(), this._width, val)) {
+			this._cpArray[2].setY(this._position.getY() + val);
+			this._cpArray[3].setY(this._position.getY() + val);
+			this._height = val;
+		}
 	}
 	
 	setPosition(x, y) {
-		if (!this._validatePos(x, y)) return;
+		if (this._validate(x, this._position.getY(), this._width, this._height)) {
+			var moveX = x - this._position.getX();
+			this._cpArray.forEach(function(element) {
+				element.setX(element.getX() + moveX);			
+			});
+			console.log('pos x: ' + x);
+			this._position.setX(x);					
+		}
 		
-		var moveX = x - this._position.getX();
-		var moveY = y - this._position.getY();
+		if (this._validate(this._position.getX(), y, this._width, this._height)) {
+			var moveY = y - this._position.getY();			
+			this._cpArray.forEach(function(element) {				
+				element.setY(element.getY() + moveY);
+			});		
 		
-		// move rectangle
-		this._cpArray.forEach(function(element) {
-			element.setX(element.getX() + moveX);
-			element.setY(element.getY() + moveY);
+			console.log('pos y: ' + y);
+			this._position.setY(y);
+		}
+	}
+	
+	_validate(x, y, w, h) {
+		// negative values
+		if (x < 0 || y < 0) return false;
+		// width oversize
+		if (x + w > this._boundary.getX()) return false;
+		// height oversize
+		if (y + h > this._boundary.getY()) return false;
+		// ok
+		return true;
+	}
+	
+	_reset() {
+		this._position.setX(0);
+		this._position.setY(0);
+		this._width = 0;
+		this._height = 0;
+		this._cpArray.forEach((element) => {
+			element.setX(0);
+			element.setY(0);
 		});
-		
-		console.log('pos x: ' + x);
-		console.log('pos y: ' + y);
-		
-		this._position.setX(x);
-		this._position.setY(y);
 	}
 	
-	_validatePos(x, y) {
-		if (x - this._position.getX())
-	}
-	
-	setBoundary(x, y){
+	setBoundary(x, y){		
+		this._reset();
 		this._boundary.setX(x);
 		this._boundary.setY(y);
 		this.justify();
@@ -111,7 +144,7 @@ class CPRectangle {
 			if ((Math.abs(element.getX() - x) < this._cpSize / 2)
 			&& (Math.abs(element.getY() - y) < this._cpSize / 2)) {
 				console.log('cp hit');
-				result = {index:i};
+				result = element;
 			}			
 		});
 		
@@ -126,58 +159,8 @@ class CPRectangle {
 		
 		return false;
 	}
-	
-	moveCp(i, x, y) {
-		console.log('movecp i:' + i + ' x:' + x + ' y: ' + y);
-		switch (i) {
-			case 0:				
-				if (x < this._cpArray[1].getX()) {
-					this.setWidth(this._cpArray[1].getX() - x);
-					//this._cpArray[i].setX(x);
-					this.setPosition(x, this._position.getY());					
-				}
-				if (y < this._cpArray[2].getY()) {
-					this.setHeight(this._cpArray[2].getY() - y);
-					//this._cpArray[i].setY(y);
-					this.setPosition(this._position.getX(), y);
-				}
-				break;
-			case 1:
-				if (x > this._cpArray[0].getX()) {
-					this.setWidth(x - this._cpArray[0].getX());
-					//this._cpArray[i].setX(x);
-				}
-				if (y < this._cpArray[3].getY()) {
-					this.setHeight(this._cpArray[3].getY() - y);
-					//this._cpArray[i].setY(y);
-					this.setPosition(this._position.getX(), y);
-				}
-				break;
-			case 2:
-				if (x < this._cpArray[3].getX()) {
-					this.setWidth(this._cpArray[3].getX() - x);
-					//this._cpArray[i].setX(x);
-					this.setPosition(x, this._position.getY());
-				}
-				if (y > this._cpArray[0].getY()) {					
-					this.setHeight(y - this._cpArray[0].getY());
-					//this._cpArray[i].setY(y);					
-				}
-				break;
-			case 3:
-				if (x > this._cpArray[2].getX()) {
-					this.setWidth(x - this._cpArray[2].getX());
-					//this._cpArray[i].setX(x);
-				}
-				if (y > this._cpArray[0].getY()) {
-					this.setHeight(y - this._cpArray[0].getY());
-					//this._cpArray[i].setY(y);
-				}
-				break;
-		}
-	}
-	
-	move(x, y) {
+		
+	move(x, y) {		
 		this.setPosition(this._position.getX() + x, this._position.getY() + y);
 	}
 	
@@ -188,24 +171,89 @@ class CPRectangle {
 		);
 	}
 	
-	justify() {
+	justify() {				
 		this.setWidth(this._boundary.getX() / 2);
 		this.setHeight(this._boundary.getY() / 2);
 		this.centerToBoundary();
 	}
-	/*
+	
+	_initCp() {		
+		var cp0 = new ControlPoint(0,0);
+		this._cpArray.push(cp0);
+		cp0.moveFn = (x, y) => {
+			if (x < this._cpArray[1].getX()) {
+					this.setWidth(this._cpArray[1].getX() - x);
+					this.setPosition(x, this._position.getY());					
+				}
+				if (y < this._cpArray[2].getY()) {
+					this.setHeight(this._cpArray[2].getY() - y);
+					this.setPosition(this._position.getX(), y);
+				}
+		}		
+		
+		var cp1 = new ControlPoint(0,0);
+		this._cpArray.push(cp1);		
+		cp1.moveFn = (x, y) => {
+				if (x > this._cpArray[0].getX()) {
+					this.setWidth(x - this._cpArray[0].getX());
+				}
+				if (y < this._cpArray[3].getY()) {
+					this.setHeight(this._cpArray[3].getY() - y);					
+					this.setPosition(this._position.getX(), y);
+				}
+		}		
+		
+		var cp2 = new ControlPoint(0,0);
+		this._cpArray.push(cp2);
+		cp2.moveFn = (x, y) => {
+				if (x < this._cpArray[3].getX()) {
+					this.setWidth(this._cpArray[3].getX() - x);					
+					this.setPosition(x, this._position.getY());
+				}
+				if (y > this._cpArray[0].getY()) {					
+					this.setHeight(y - this._cpArray[0].getY());
+				}
+		}
+		
+		var cp3 = new ControlPoint(0,0);
+		this._cpArray.push(cp3);
+		cp3.moveFn = (x, y) => {
+				if (x > this._cpArray[2].getX()) {
+					this.setWidth(x - this._cpArray[2].getX());					
+				}
+				if (y > this._cpArray[0].getY()) {
+					this.setHeight(y - this._cpArray[0].getY());					
+				}				
+		}		
+	}
+	
 	draw(ctx) {
 		ctx.setLineDash([4, 2]);		
 		ctx.strokeStyle = "rgba(0, 0, 0, 0.6)";
-			
-			// cprect.draw()
+					
 		ctx.strokeRect(
 			this.getPosition().getX(),
 			this.getPosition().getY(),
 			this.getWidth(),
 			this.getHeight(),
-		);
-	}	*/
+		);		
+		
+		this._cpArray.forEach((element) => {
+					if (element.isActive()) { 
+						ctx.fillStyle = "rgba(255, 0, 0, 0.6)";
+					} else {
+						ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+					}
+					ctx.fillRect(
+					element.getX() - this._cpSize / 2,
+					element.getY() - this._cpSize / 2,
+					this._cpSize,
+					this._cpSize
+				);
+		});
+		
+		ctx.setLineDash([0, 0]);
+	}
 }
 
 export { CPRectangle };
