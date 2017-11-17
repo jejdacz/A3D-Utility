@@ -7,7 +7,7 @@
 import { ToolBase } from "./ToolBase.js";
 import { Point } from "./Point.js";
 		
-class Meter extends ToolBase {
+class Meter extends ToolBase {	//FIXME Point handling se/get XY
 	constructor(ime) {
 		super();
 		this._ime = ime;
@@ -40,17 +40,15 @@ class Meter extends ToolBase {
 		this._currentPos.y = y;		
 		this._drawable = true;		
 		this._enableMouseMove();		
-		this._onMouseDownAction = (x, y) => this._finish(x, y);
-		this.onChange();
+		this._onMouseDownAction = (x, y) => this._finish(x, y);		
 	}
 	
 	_finish(x, y) {
 		console.log("mtr finish");
 		this._drawable = false;				
 		this._onMouseDownAction = (x, y) => this._start(x, y);
-		this._disableMouseMove();
-		this.onChange();
-		this._inProcess = false;
+		this._disableMouseMove();		
+		this._inProcess = false;		
 	}
 	
 	onActivate() {

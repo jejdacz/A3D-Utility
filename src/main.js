@@ -26,6 +26,7 @@ import { GUIController } from "./lib/GUIController.js";
 import { EventTarget } from "./lib/EventTarget.js";
 import { Grid } from "./lib/Grid.js";
 import { Meter } from "./lib/Meter.js";
+import { Crop } from "./lib/Crop.js";
 import { NullTool } from "./lib/NullTool.js";
 
 const IME_TOOLS = "#ime-tools";
@@ -113,6 +114,15 @@ function initIME() {
 		.text("Meter")
 		.click({tool:meter}, clickTool)
 		.appendTo(IME_TOOLS);
+		
+	/* Create crop tool */
+	var crop = Crop.create(ime);
+	ime.addTool(crop);	
+	crop.addEventListener("change", e => ime.onChange(e));	
+	$(TOOL_BUTTON)
+		.text("Crop")
+		.click({tool:crop}, clickTool)
+		.appendTo(IME_TOOLS);
 			
 	/* Create cursor tool */
 	var cursor = NullTool.create();	
@@ -127,7 +137,7 @@ function initIME() {
 	$CANVAS.appendTo("#canvas-placeholder");
 	
 	// enable contols when file loaded
-	ime.addEventListener("imageload", e => gui.enableControls());
+	ime.addEventListener("imageload", () => gui.enableControls());
 	
 	// set default image
 	ime.setImageSource("/static/blank.jpg");
@@ -166,7 +176,7 @@ function initOpenFile() {
   			
   			// pass src to editor, displays warning image
   			ime.setImageSource("/static/invalid.jpg");
-  		}	  		
+  		}		
 	}
 }
 

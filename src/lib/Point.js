@@ -10,6 +10,24 @@ class Point {
 		this._y = y;
 	}
 	
+	setX(val) {
+		this._x = val;
+		return this;
+	}
+	
+	setY(val) {
+		this._y = val;
+		return this;
+	}
+	
+	getX() {
+		return this._x;
+	}
+	
+	getY() {
+		return this._y;
+	}
+	
 	distance() {		
 		if (arguments.length == 1 && (arguments[0] instanceof Point)) {
 			return this._distance(arguments[0].x, arguments[0].y);

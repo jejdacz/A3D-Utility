@@ -35,7 +35,7 @@ class ImageEditorController extends EventTarget{
 	}
 			
 	activateTool(tool) {
-		console.log("activating tool " + tool);
+		
 		// notify about tool override		
 		if (this._activeTool != null) {
 			this.dispatchEvent({type:"overridetool"});
@@ -45,6 +45,7 @@ class ImageEditorController extends EventTarget{
 		if (this._activeTool != null) this.deactivateTool(this._activeTool);
 				
 		// activate selected tool
+		console.log("activating tool " + tool);
 		this._activeTool = tool;
 		this._activeTool.activate();		
 	}
