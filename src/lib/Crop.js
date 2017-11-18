@@ -103,10 +103,16 @@ class Crop extends ToolBase {
 		this._ime.imageDC.sh = this._cpRect.getHeight();
 		this._ime.imageDC.dw = this._cpRect.getWidth();
 		this._ime.imageDC.dh = this._cpRect.getHeight();
+		// v2 pass imageDC ref by ctor; //ime dont know about change
+		// v4 pass function setIMDC() by ctor and call it with dcsettings
+		// v1 direct call ime.setImageConfig({obj});
+		// v3 distribute config object in event args
+		// v5 use setter for delivery of apply config function PROPERTY INJECTION		
 		this._ime.canvas.width = this._cpRect.getWidth();
 		this._ime.canvas.height = this._cpRect.getHeight();
 		this._cpRect.setBoundary(this._ime.canvas.width, this._ime.canvas.height);
 		this.dispatchEvent({type:"crop"});	 // ime.resize	
+		//this.dispatchEvent({type:"imageconfigchange"});
 	}										
 	
 	draw() {		
