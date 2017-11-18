@@ -1,3 +1,4 @@
+//TODO remove ime dependency
 /**
  * Image editor controller.
  *
@@ -12,27 +13,52 @@ class ImageEditorController extends EventTarget{
 		this._canvas = canvas;
 		this._ctx = canvas.getContext("2d");
 		this._originalImage = new Image(); // backup for undo
-		this._image = new Image(); // image to edit
-		this.imageDC = {src:this._image,
-														sx:0, sy:0,
-														sw:this._image.width,
-														sh:this._image.height,
-														dx:0, dy:0,
-														dw:this._image.width,
-														dh:this._image.height
-														}; 
+		this._image = new Image(); // image to edit		
+		this.imageDC = {
+			src:this._image,
+			sx:0, sy:0,
+			sw:this._image.width,
+			sh:this._image.height,
+			dx:0, dy:0,
+			dw:this._image.width,
+			dh:this._image.height,
+		};
+		this._zoom = { ratio:1.0, increment:1.25 };
 		this._helpers = []; // multiple helpers can be active at once
 		this._tools = []; // only one tool can be active at the moment
 		this._activeTool = null;	
-		this._image.onload = (e) => this.onImageLoad(e);
+		this._image.onload = (e) => {
+			this.dispatchEvent({type:"imageload"});
+			this.imageLoaded(e);
+		};																	
 	}
 	
 	static create(canvas) {
 		return new ImageEditorController(canvas);
 	}
-		
+			
 	get canvas() { return this._canvas;}
-	get ctx() { return this._ctx;}
+	get ctx() { return this._ctx;}	
+	
+	getZoom() {
+		return this._zoom;
+	}
+	
+	setZoom(val) {
+		this._zoom.ratio = val;
+		this._canvas.width = Math.round(this.imageDC.dw * this._zoom.ratio);
+		this._canvas.height = Math.round(this.imageDC.dh * this._zoom.ratio);	
+		this.resetTool();
+		this.draw();
+	}
+	
+	zoomIn() {
+		this.setZoom(this._zoom.ratio * this._zoom.increment);		
+	}
+	
+	zoomOut() {
+		this.setZoom(this._zoom.ratio / this._zoom.increment);		
+	}
 	
 	setImageSource(src) {
 		this._image.src = src;
@@ -83,20 +109,35 @@ class ImageEditorController extends EventTarget{
 	/**
 	 * Event handlers.
 	 */	 	
-	onImageLoad(e) {
-		
+	imageLoaded(e) {
 		this.resetImage();
-		
-		this.dispatchEvent({type:"imageload"});		
-		
+		this.resetTool();		
+		this.draw();
 	}
 	
-	onChange(e) {
-		console.log("ime onchange");
+	imageResized() {
+		this.resetTool();
 		this.draw();
+	}
+	
+	// event handling method = method executed by event handler when event was fired
+	// in C# objname_eventname(sender, evargs)	implements eventhandler interface
+	// context changed imectx_Changed(e) / contextChanged()
+		
+	restore() {
+		this.resetImage();
+		this.draw();  // fire event restore  // catch event restore set callback ctxChanged
+	}
+	
+	resetTool() {
+		if (this._activeTool) {
+			this._activeTool.deactivate();
+			this._activeTool.activate();			
+		}
 	}
 		
 	resetImage() {
+		this._zoom.ratio = 1.0;
 		this.imageDC.sx = 0;
 		this.imageDC.sy = 0;				
 		this.imageDC.sw = this._image.width;
@@ -107,13 +148,6 @@ class ImageEditorController extends EventTarget{
 		this.imageDC.dh = this._image.height;
 		this._canvas.width = this._image.width;
 		this._canvas.height = this._image.height;
-		
-		if (this._activeTool) {
-			this._activeTool.deactivate();
-			this._activeTool.activate();			
-		}
-		
-		this.onChange({type:"change"});
 	}
 		
 	/**
@@ -131,8 +165,8 @@ class ImageEditorController extends EventTarget{
 												this.imageDC.sh,
 												this.imageDC.dx,
 												this.imageDC.dy,
-												this.imageDC.dw,
-												this.imageDC.dh,
+												Math.round(this.imageDC.dw * this._zoom.ratio),
+												Math.round(this.imageDC.dh * this._zoom.ratio),
 												);
 												
 		// draw helpers

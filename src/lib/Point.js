@@ -30,7 +30,7 @@ class Point {
 	
 	distance() {		
 		if (arguments.length == 1 && (arguments[0] instanceof Point)) {
-			return this._distance(arguments[0].x, arguments[0].y);
+			return this._distance(arguments[0].getX(), arguments[0].getY());
 			
 		} else if (arguments.length == 2) {
 			return this._distance(arguments[0], arguments[1]);
@@ -38,7 +38,11 @@ class Point {
 	}
 	
 	_distance(x, y) {
-		return Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
+		return Math.sqrt(Math.pow(x - this._x, 2) + Math.pow(y - this._y, 2));
+	}
+	
+	toString() {
+		return `[Object Point: x:${this._x}, y:${this._y}]`;
 	}	
 }
 

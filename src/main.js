@@ -10,10 +10,11 @@
  */
 
 //MUST:
-//TODO Crop class
-//TODO UNDO
-//TODO Zoom
+//TODO Grid controls
+//TODO Crop controls (ratio)
+//TODO Controls layout
 //FIXME Code style
+//FIXME Event class
 
 //SHOULD:
 //TODO * debug log class
@@ -98,7 +99,7 @@ function initIME() {
 	/* Create grid helper */
 	var grid = Grid.create(ime.canvas, 3, 3);
 	ime.addHelper(grid); // ime calls draw()
-	grid.addEventListener("change", e => ime.onChange(e));
+	grid.addEventListener("change", () => ime.draw());
 	var gridIcon = "<span class=\"glyphicon glyphicon-th\" aria-hidden=\"true\"></span>";	
 	$(HELPER_BUTTON)
 		.html(gridIcon)
@@ -108,7 +109,7 @@ function initIME() {
 	/* Create meter tool */
 	var meter = Meter.create(ime);
 	ime.addTool(meter);	
-	meter.addEventListener("change", e => ime.onChange(e));	
+	meter.addEventListener("change", () => ime.draw());
 	$(TOOL_BUTTON)
 		.text("Meter")
 		.click({tool:meter}, clickTool)
@@ -117,7 +118,8 @@ function initIME() {
 	/* Create crop tool */
 	var crop = Crop.create(ime);
 	ime.addTool(crop);	
-	crop.addEventListener("change", e => ime.onChange(e));	
+	crop.addEventListener("change", () => ime.draw());
+	crop.addEventListener("crop", () => {ime.resetTool();ime.draw();});
 	$(TOOL_BUTTON)
 		.text("Crop")
 		.click({tool:crop}, clickTool)
@@ -138,8 +140,18 @@ function initIME() {
 		.appendTo(IME_HELPERS);
 		
 	$(HELPER_BUTTON)
-		.text("ResetImage")
-		.click( e => ime.resetImage(e) )
+		.text("Restore")
+		.click( () => ime.restore() )
+		.appendTo(IME_HELPERS);
+		
+	$(HELPER_BUTTON)
+		.text(" + ")
+		.click( () => ime.zoomIn() )		
+		.appendTo(IME_HELPERS);
+		
+	$(HELPER_BUTTON)
+		.text(" - ")
+		.click( () => ime.zoomOut() )	
 		.appendTo(IME_HELPERS);
 	
 	// place canvas to page
@@ -148,7 +160,7 @@ function initIME() {
 	// enable contols when file loaded
 	ime.addEventListener("imageload", () => gui.enableControls());
 	
-	// set default image
+	// set default image	
 	ime.setImageSource("/static/blank.jpg");
 }
 
