@@ -119,7 +119,7 @@ function initIME() {
 	var crop = Crop.create(ime);
 	ime.addTool(crop);	
 	crop.addEventListener("change", () => ime.draw());
-	crop.addEventListener("crop", () => {ime.resetTool();ime.draw();});
+	crop.addEventListener("imagechange", () => {ime.resetTool();ime.draw();});
 	$(TOOL_BUTTON)
 		.text("Crop")
 		.click({tool:crop}, clickTool)
@@ -136,7 +136,7 @@ function initIME() {
 		
 	$(HELPER_BUTTON)
 		.text("CropOk")
-		.click( e => crop.crop(e) )
+		.click( () => {crop.crop();} )  // imageDC won't be modified during it's lifetime so CTOR injection is ok
 		.appendTo(IME_HELPERS);
 		
 	$(HELPER_BUTTON)

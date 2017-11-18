@@ -11,9 +11,10 @@ import { CPRectangle } from "./CPRectangle.js";
 import { Point } from "./Point.js";
 
 class Crop extends ToolBase {
-	constructor(ime) {
+	constructor(canvas, imageDC) {
 		super();
-		this._ime = ime;		
+		this._imageDC = imageDC;
+		this._canvas = canvas;		
 		this._activeCp;
 		this._cpRect = new CPRectangle();
 		this._cursorPrevPos = new Point(0,0);
@@ -21,25 +22,24 @@ class Crop extends ToolBase {
 		
 		// mouse listeners setup
 		var md = (e) => this.onMouseDown(e);
-		this._disableMouseDown = function() {ime.canvas.removeEventListener("mousedown", md)};
-		this._enableMouseDown = function() {ime.canvas.addEventListener("mousedown", md)};
+		this._disableMouseDown = function() {this._canvas.removeEventListener("mousedown", md)};
+		this._enableMouseDown = function() {this._canvas.addEventListener("mousedown", md)};
 				
 		var mu = (e) => this.onMouseUp(e);
-		this._disableMouseUp = function() {ime.canvas.removeEventListener("mouseup", mu)};
-		this._enableMouseUp = function() {ime.canvas.addEventListener("mouseup", mu)};
+		this._disableMouseUp = function() {this._canvas.removeEventListener("mouseup", mu)};
+		this._enableMouseUp = function() {this._canvas.addEventListener("mouseup", mu)};
 				
 		var mm = (e) => this.onMouseMove(e);
-		this._disableMouseMove = function() {ime.canvas.removeEventListener("mousemove", mm)};
-		this._enableMouseMove = function() {ime.canvas.addEventListener("mousemove", mm)};
+		this._disableMouseMove = function() {this._canvas.removeEventListener("mousemove", mm)};
+		this._enableMouseMove = function() {this._canvas.addEventListener("mousemove", mm)};
 	}
 			
-	static create(ime) {
-		return new Crop(ime);
+	static create(canvas, imageDC) {
+		return new Crop(canvas, imageDC);
 	}
 		
 	onActivate() {		
-		console.log('crop activated');
-		this._cpRect.setBoundary(this._ime.canvas.width, this._ime.canvas.height);		
+		this._cpRect.setBoundary(this._canvas.width, this._canvas.height);		
 		this._enableMouseDown();
 		this._enableMouseUp();
 		this._drawable = true;
@@ -97,27 +97,31 @@ class Crop extends ToolBase {
 	}
 	
 	crop() {		
-		this._ime.imageDC.sx += this._cpRect.getPosition().getX();
-		this._ime.imageDC.sy += this._cpRect.getPosition().getY();
-		this._ime.imageDC.sw = this._cpRect.getWidth();
-		this._ime.imageDC.sh = this._cpRect.getHeight();
-		this._ime.imageDC.dw = this._cpRect.getWidth();
-		this._ime.imageDC.dh = this._cpRect.getHeight();
-		// v2 pass imageDC ref by ctor; //ime dont know about change
-		// v4 pass function setIMDC() by ctor and call it with dcsettings
-		// v1 direct call ime.setImageConfig({obj});
-		// v3 distribute config object in event args
-		// v5 use setter for delivery of apply config function PROPERTY INJECTION		
-		this._ime.canvas.width = this._cpRect.getWidth();
-		this._ime.canvas.height = this._cpRect.getHeight();
-		this._cpRect.setBoundary(this._ime.canvas.width, this._ime.canvas.height);
-		this.dispatchEvent({type:"crop"});	 // ime.resize	
-		//this.dispatchEvent({type:"imageconfigchange"});
+		if (this._active) {
+			this._imageDC.sx += this._cpRect.getPosition().getX();
+			this._imageDC.sy += this._cpRect.getPosition().getY();
+			this._imageDC.sw = this._cpRect.getWidth();
+			this._imageDC.sh = this._cpRect.getHeight();
+			this._imageDC.dw = this._cpRect.getWidth();
+			this._imageDC.dh = this._cpRect.getHeight();
+			// v2 pass imageDC ref by ctor; //ime dont know about change
+			// v4 pass function setIMDC() by ctor and call it with dcsettings
+			// v1 direct call ime.setImageConfig({obj});
+			// v3 distribute config object in event args
+			// v5 use setter for delivery of apply config function PROPERTY INJECTION		
+			this._canvas.width = this._cpRect.getWidth();
+			this._canvas.height = this._cpRect.getHeight();
+			this._cpRect.setBoundary(this._canvas.width, this._canvas.height);
+			//this.dispatchEvent({type:"crop"});	 // ime.resize	
+			this.dispatchEvent({type:"imagechange"});
+		} else {
+			console.warn("Crop tool isn't active!");
+		}
 	}										
 	
 	draw() {		
 		if (this.drawable) {
-			this._cpRect.draw(this._ime.ctx);									
+			this._cpRect.draw(this._canvas.getContext("2d"));									
 		}		
 	}	
 }
