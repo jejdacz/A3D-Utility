@@ -14,7 +14,7 @@ class ImageEditorController extends EventTarget{
 		this._ctx = canvas.getContext("2d");
 		this._originalImage = new Image(); // backup for undo
 		this._image = new Image(); // image to edit		
-		this.imageDC = {
+		this._imageDC = {
 			src:this._image,
 			sx:0, sy:0,
 			sw:this._image.width,
@@ -22,8 +22,12 @@ class ImageEditorController extends EventTarget{
 			dx:0, dy:0,
 			dw:this._image.width,
 			dh:this._image.height,
+			zoom:{
+				ratio:1.0,
+				increment:1.25,
+				}
 		};
-		this._zoom = { ratio:1.0, increment:1.25 };
+		//this._zoom = { ratio:1.0, increment:1.25 };
 		this._helpers = []; // multiple helpers can be active at once
 		this._tools = []; // only one tool can be active at the moment
 		this._activeTool = null;	
@@ -33,31 +37,43 @@ class ImageEditorController extends EventTarget{
 		};																	
 	}
 	
-	static create(canvas) {
-		return new ImageEditorController(canvas);
+	static create(args) {
+		return new ImageEditorController(args.canvas);
 	}
 			
 	get canvas() { return this._canvas;}
-	get ctx() { return this._ctx;}	
+	get ctx() { return this._ctx;}
 	
-	getZoom() {
-		return this._zoom;
+	getCanvas() {
+		return this._canvas;
 	}
 	
+	getCtx() {
+		return this._ctx;
+	}
+	
+	getImageDC() {
+		return this._imageDC;
+	}
+	/*
+	getZoom() {
+		return this._zoom;
+	}*/
+	
 	setZoom(val) {
-		this._zoom.ratio = val;
-		this._canvas.width = Math.round(this.imageDC.dw * this._zoom.ratio);
-		this._canvas.height = Math.round(this.imageDC.dh * this._zoom.ratio);	
+		this._imageDC.zoom.ratio = val;
+		this._canvas.width = Math.round(this._imageDC.dw * this._imageDC.zoom.ratio);
+		this._canvas.height = Math.round(this._imageDC.dh * this._imageDC.zoom.ratio);	
 		this.resetTool();
 		this.draw();
 	}
 	
 	zoomIn() {
-		this.setZoom(this._zoom.ratio * this._zoom.increment);		
+		this.setZoom(this._imageDC.zoom.ratio * this._imageDC.zoom.increment);		
 	}
 	
 	zoomOut() {
-		this.setZoom(this._zoom.ratio / this._zoom.increment);		
+		this.setZoom(this._imageDC.zoom.ratio / this._imageDC.zoom.increment);		
 	}
 	
 	setImageSource(src) {
@@ -120,12 +136,20 @@ class ImageEditorController extends EventTarget{
 		this.draw();
 	}
 	
+	imageConfigModified() {
+		this._canvas.width = Math.round(this._imageDC.dw * this._imageDC.zoom.ratio);
+		this._canvas.height = Math.round(this._imageDC.dh * this._imageDC.zoom.ratio);
+		this.resetTool();
+		this.draw();
+	}
+	
 	// event handling method = method executed by event handler when event was fired
 	// in C# objname_eventname(sender, evargs)	implements eventhandler interface
 	// context changed imectx_Changed(e) / contextChanged()
 		
 	restore() {
 		this.resetImage();
+		this.resetTool();
 		this.draw();  // fire event restore  // catch event restore set callback ctxChanged
 	}
 	
@@ -137,15 +161,15 @@ class ImageEditorController extends EventTarget{
 	}
 		
 	resetImage() {
-		this._zoom.ratio = 1.0;
-		this.imageDC.sx = 0;
-		this.imageDC.sy = 0;				
-		this.imageDC.sw = this._image.width;
-		this.imageDC.sh = this._image.height;
-		this.imageDC.dx = 0;
-		this.imageDC.dy = 0;
-		this.imageDC.dw = this._image.width;
-		this.imageDC.dh = this._image.height;
+		this._imageDC.zoom.ratio = 1.0;
+		this._imageDC.sx = 0;
+		this._imageDC.sy = 0;				
+		this._imageDC.sw = this._image.width;
+		this._imageDC.sh = this._image.height;
+		this._imageDC.dx = 0;
+		this._imageDC.dy = 0;
+		this._imageDC.dw = this._image.width;
+		this._imageDC.dh = this._image.height;
 		this._canvas.width = this._image.width;
 		this._canvas.height = this._image.height;
 	}
@@ -158,15 +182,15 @@ class ImageEditorController extends EventTarget{
 		this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
 		
 		// draw image
-		this._ctx.drawImage(this.imageDC.src,
-												this.imageDC.sx,
-												this.imageDC.sy,
-												this.imageDC.sw,
-												this.imageDC.sh,
-												this.imageDC.dx,
-												this.imageDC.dy,
-												Math.round(this.imageDC.dw * this._zoom.ratio),
-												Math.round(this.imageDC.dh * this._zoom.ratio),
+		this._ctx.drawImage(this._imageDC.src,
+												this._imageDC.sx,
+												this._imageDC.sy,
+												this._imageDC.sw,
+												this._imageDC.sh,
+												this._imageDC.dx,
+												this._imageDC.dy,
+												Math.round(this._imageDC.dw * this._imageDC.zoom.ratio),
+												Math.round(this._imageDC.dh * this._imageDC.zoom.ratio),
 												);
 												
 		// draw helpers

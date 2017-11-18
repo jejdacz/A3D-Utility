@@ -8,9 +8,10 @@ import { ToolBase } from "./ToolBase.js";
 import { Point } from "./Point.js";
 		
 class Meter extends ToolBase {
-	constructor(ime) {
-		super();
-		this._ime = ime;
+	constructor(canvas) {
+		super();		
+		this._canvas = canvas;
+		this._ctx = canvas.getContext("2d");
 		this._startPos = new Point(0, 0);
 		this._currentPos = new Point(0, 0);
 		this._onMouseDownAction = (x, y) => this._start(x, y);
@@ -18,17 +19,17 @@ class Meter extends ToolBase {
 		
 		// mousedown listener add/remove methods
 		var md = (e) => this.onMouseDown(e);  // must be the same instance for add and remove
-		this._disableMouseDown = function() {ime.canvas.removeEventListener("mousedown", md)};
-		this._enableMouseDown = function() {ime.canvas.addEventListener("mousedown", md)};
+		this._disableMouseDown = function() {canvas.removeEventListener("mousedown", md)};
+		this._enableMouseDown = function() {canvas.addEventListener("mousedown", md)};
 		
 		// mousemove listener add/remove methods
 		var mm = (e) => this.onMouseMove(e);
-		this._disableMouseMove = function() {ime.canvas.removeEventListener("mousemove", mm)};
-		this._enableMouseMove = function() {ime.canvas.addEventListener("mousemove", mm)};	
+		this._disableMouseMove = function() {canvas.removeEventListener("mousemove", mm)};
+		this._enableMouseMove = function() {canvas.addEventListener("mousemove", mm)};	
 	}
 	
-	static create(ime) {
-		return new Meter(ime);
+	static create(args) {
+		return new Meter(args.canvas);
 	}	
 	
 	_start(x, y) {					
@@ -92,20 +93,20 @@ class Meter extends ToolBase {
 	draw() {
 		//TODO global drawing configuration
 		if (this.drawable) {
-			this._ime.ctx.beginPath();
-			this._ime.ctx.moveTo(this._startPos.getX(), this._startPos.getY());
-			this._ime.ctx.lineTo(this._currentPos.getX(), this._currentPos.getY());
-			this._ime.ctx.closePath();
-			this._ime.ctx.shadowOffsetX = 1;
-			this._ime.ctx.shadowOffsetY = 1;
-			this._ime.ctx.shadowBlur = 1;
-			this._ime.ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
-			this._ime.ctx.lineWidth = 3;
-			this._ime.ctx.strokeStyle = "rgba(255, 255, 0, 0.6)";					
-			this._ime.ctx.stroke();
-			this._ime.ctx.font = "16px Arial";
-			this._ime.ctx.fillStyle = "rgba(255, 255, 0, 1.0)";
-			this._ime.ctx.fillText(Math.round(this._startPos.distance(this._currentPos)) + " px", this._currentPos.getX(), this._currentPos.getY());
+			this._ctx.beginPath();
+			this._ctx.moveTo(this._startPos.getX(), this._startPos.getY());
+			this._ctx.lineTo(this._currentPos.getX(), this._currentPos.getY());
+			this._ctx.closePath();
+			this._ctx.shadowOffsetX = 1;
+			this._ctx.shadowOffsetY = 1;
+			this._ctx.shadowBlur = 1;
+			this._ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+			this._ctx.lineWidth = 3;
+			this._ctx.strokeStyle = "rgba(255, 255, 0, 0.6)";					
+			this._ctx.stroke();
+			this._ctx.font = "16px Arial";
+			this._ctx.fillStyle = "rgba(255, 255, 0, 1.0)";
+			this._ctx.fillText(Math.round(this._startPos.distance(this._currentPos)) + " px", this._currentPos.getX(), this._currentPos.getY());
 			console.log("meter drawing");
 		}
 	}

@@ -17,8 +17,8 @@ class Grid extends EventTarget{
 		this._style = "rgba(0, 0, 0, 0.75)";
 	}
 	
-	static create(canvas, rows, cols) {
-		return new Grid(canvas, rows, cols);
+	static create(args) {
+		return new Grid(args.canvas, args.rows, args.cols);
 	}
 	
 	get canvas() {

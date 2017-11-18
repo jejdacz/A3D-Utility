@@ -38,7 +38,7 @@ const HELPER_BUTTON = "<button type=\"button\" class=\"btn btn-success btn-sm\">
 const TOOL_BUTTON = "<button type=\"button\" class=\"btn btn-info btn-sm\">text</button>";
 
 const $CANVAS = $("<canvas>", {text: "Your browser does not support the HTML5 canvas tag."});
-const ime = ImageEditorController.create($CANVAS[0]);
+const ime = ImageEditorController.create({ canvas:$CANVAS[0] });
 const gui = GUIController.create();
 const reader = new FileReader();
 
@@ -97,7 +97,7 @@ function initIME() {
 	}
 		
 	/* Create grid helper */
-	var grid = Grid.create(ime.canvas, 3, 3);
+	var grid = Grid.create({ canvas:ime.getCanvas(), rows:3, cols:3 });
 	ime.addHelper(grid); // ime calls draw()
 	grid.addEventListener("change", () => ime.draw());
 	var gridIcon = "<span class=\"glyphicon glyphicon-th\" aria-hidden=\"true\"></span>";	
@@ -107,7 +107,7 @@ function initIME() {
 		.appendTo(IME_HELPERS);
 	
 	/* Create meter tool */
-	var meter = Meter.create(ime);
+	var meter = Meter.create({ canvas:ime.getCanvas() });
 	ime.addTool(meter);	
 	meter.addEventListener("change", () => ime.draw());
 	$(TOOL_BUTTON)
@@ -116,10 +116,10 @@ function initIME() {
 		.appendTo(IME_TOOLS);
 		
 	/* Create crop tool */
-	var crop = Crop.create(ime);
+	var crop = Crop.create({ canvas:ime.getCanvas(),imageDC:ime.getImageDC() });
 	ime.addTool(crop);	
 	crop.addEventListener("change", () => ime.draw());
-	crop.addEventListener("imagechange", () => {ime.resetTool();ime.draw();});
+	crop.addEventListener("image:modify", () => {ime.imageConfigModified();});
 	$(TOOL_BUTTON)
 		.text("Crop")
 		.click({tool:crop}, clickTool)

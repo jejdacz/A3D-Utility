@@ -1,5 +1,4 @@
-//TODO imageDC setter
-//TODO remove ime dependency
+//TODO zoom coordination
 /**
  * Crop image tool.
  *
@@ -14,7 +13,7 @@ class Crop extends ToolBase {
 	constructor(canvas, imageDC) {
 		super();
 		this._imageDC = imageDC;
-		this._canvas = canvas;		
+		this._canvas = canvas;
 		this._activeCp;
 		this._cpRect = new CPRectangle();
 		this._cursorPrevPos = new Point(0,0);
@@ -22,20 +21,20 @@ class Crop extends ToolBase {
 		
 		// mouse listeners setup
 		var md = (e) => this.onMouseDown(e);
-		this._disableMouseDown = function() {this._canvas.removeEventListener("mousedown", md)};
-		this._enableMouseDown = function() {this._canvas.addEventListener("mousedown", md)};
+		this._disableMouseDown = function() {canvas.removeEventListener("mousedown", md)};
+		this._enableMouseDown = function() {canvas.addEventListener("mousedown", md)};
 				
 		var mu = (e) => this.onMouseUp(e);
-		this._disableMouseUp = function() {this._canvas.removeEventListener("mouseup", mu)};
-		this._enableMouseUp = function() {this._canvas.addEventListener("mouseup", mu)};
+		this._disableMouseUp = function() {canvas.removeEventListener("mouseup", mu)};
+		this._enableMouseUp = function() {canvas.addEventListener("mouseup", mu)};
 				
 		var mm = (e) => this.onMouseMove(e);
-		this._disableMouseMove = function() {this._canvas.removeEventListener("mousemove", mm)};
-		this._enableMouseMove = function() {this._canvas.addEventListener("mousemove", mm)};
+		this._disableMouseMove = function() {canvas.removeEventListener("mousemove", mm)};
+		this._enableMouseMove = function() {canvas.addEventListener("mousemove", mm)};
 	}
 			
-	static create(canvas, imageDC) {
-		return new Crop(canvas, imageDC);
+	static create(args) {
+		return new Crop(args.canvas, args.imageDC);
 	}
 		
 	onActivate() {		
@@ -98,22 +97,13 @@ class Crop extends ToolBase {
 	
 	crop() {		
 		if (this._active) {
-			this._imageDC.sx += this._cpRect.getPosition().getX();
-			this._imageDC.sy += this._cpRect.getPosition().getY();
-			this._imageDC.sw = this._cpRect.getWidth();
-			this._imageDC.sh = this._cpRect.getHeight();
-			this._imageDC.dw = this._cpRect.getWidth();
-			this._imageDC.dh = this._cpRect.getHeight();
-			// v2 pass imageDC ref by ctor; //ime dont know about change
-			// v4 pass function setIMDC() by ctor and call it with dcsettings
-			// v1 direct call ime.setImageConfig({obj});
-			// v3 distribute config object in event args
-			// v5 use setter for delivery of apply config function PROPERTY INJECTION		
-			this._canvas.width = this._cpRect.getWidth();
-			this._canvas.height = this._cpRect.getHeight();
-			this._cpRect.setBoundary(this._canvas.width, this._canvas.height);
-			//this.dispatchEvent({type:"crop"});	 // ime.resize	
-			this.dispatchEvent({type:"imagechange"});
+			this._imageDC.sx += this._cpRect.getPosition().getX() / this._imageDC.zoom.ratio;
+			this._imageDC.sy += this._cpRect.getPosition().getY() / this._imageDC.zoom.ratio;
+			this._imageDC.sw = this._cpRect.getWidth() / this._imageDC.zoom.ratio;
+			this._imageDC.sh = this._cpRect.getHeight() / this._imageDC.zoom.ratio;
+			this._imageDC.dw = this._cpRect.getWidth() / this._imageDC.zoom.ratio;
+			this._imageDC.dh = this._cpRect.getHeight() / this._imageDC.zoom.ratio;			
+			this.dispatchEvent({type:"image:modify"});
 		} else {
 			console.warn("Crop tool isn't active!");
 		}
@@ -127,4 +117,4 @@ class Crop extends ToolBase {
 }
 
 export { Crop };
-
+0
