@@ -9,18 +9,14 @@
  * - 3d file opening
  */
 
-//MUST:
 //TODO Grid controls
 //TODO Crop controls (ratio)
 //TODO Controls layout
+//TODO default draw style
+
 //FIXME Code style
 //FIXME Event class
-
-//SHOULD:
-//TODO * debug log class
-
-//TIPS:
-//TODO first test then refactor
+//FIXME No blank file
 
 import { ImageEditorController } from "./lib/ImageEditorController.js";
 import { GUIController } from "./lib/GUIController.js";
@@ -116,10 +112,10 @@ function initIME() {
 		.appendTo(IME_TOOLS);
 		
 	/* Create crop tool */
-	var crop = Crop.create({ canvas:ime.getCanvas(),imageDC:ime.getImageDC() });
+	var crop = Crop.create({ canvas:ime.getCanvas(),imageConf:ime.getimageConf() });
 	ime.addTool(crop);	
 	crop.addEventListener("change", () => ime.draw());
-	crop.addEventListener("image:modify", () => {ime.imageConfigModified();});
+	crop.addEventListener("crop", () => {ime.imageConfigModified();});
 	$(TOOL_BUTTON)
 		.text("Crop")
 		.click({tool:crop}, clickTool)
@@ -136,7 +132,7 @@ function initIME() {
 		
 	$(HELPER_BUTTON)
 		.text("CropOk")
-		.click( () => {crop.crop();} )  // imageDC won't be modified during it's lifetime so CTOR injection is ok
+		.click( () => {crop.crop();} )  // imageConf won't be modified during it's lifetime so CTOR injection is ok
 		.appendTo(IME_HELPERS);
 		
 	$(HELPER_BUTTON)

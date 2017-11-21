@@ -1,6 +1,5 @@
-//TODO zoom coordination
 /**
- * Crop image tool.
+ * Crop canvas tool.
  *
  * @author Marek Mego
  */
@@ -10,11 +9,11 @@ import { CPRectangle } from "./CPRectangle.js";
 import { Point } from "./Point.js";
 
 class Crop extends ToolBase {
-	constructor(canvas, imageDC) {
+	constructor(canvas, imageConf) {
 		super();
-		this._imageDC = imageDC;
+		this._imageConf = imageConf;
 		this._canvas = canvas;
-		this._activeCp;
+		this._activeCp = undefined; // active control point
 		this._cpRect = new CPRectangle();
 		this._cursorPrevPos = new Point(0,0);
 		this._onMouseMoveAction;
@@ -34,7 +33,7 @@ class Crop extends ToolBase {
 	}
 			
 	static create(args) {
-		return new Crop(args.canvas, args.imageDC);
+		return new Crop(args.canvas, args.imageConf);
 	}
 		
 	onActivate() {		
@@ -83,6 +82,7 @@ class Crop extends ToolBase {
 	
 	onMouseUp(e) {			
 		this._disableMouseMove();
+		this._activeCp = undefined;
 		this.onChange();						 
 	}
 		
@@ -97,13 +97,13 @@ class Crop extends ToolBase {
 	
 	crop() {		
 		if (this._active) {
-			this._imageDC.sx += this._cpRect.getPosition().getX() / this._imageDC.zoom.ratio;
-			this._imageDC.sy += this._cpRect.getPosition().getY() / this._imageDC.zoom.ratio;
-			this._imageDC.sw = this._cpRect.getWidth() / this._imageDC.zoom.ratio;
-			this._imageDC.sh = this._cpRect.getHeight() / this._imageDC.zoom.ratio;
-			this._imageDC.dw = this._cpRect.getWidth() / this._imageDC.zoom.ratio;
-			this._imageDC.dh = this._cpRect.getHeight() / this._imageDC.zoom.ratio;			
-			this.dispatchEvent({type:"image:modify"});
+			this._imageConf.sx += this._cpRect.getPosition().getX() / this._imageConf.zoom.ratio;
+			this._imageConf.sy += this._cpRect.getPosition().getY() / this._imageConf.zoom.ratio;
+			this._imageConf.sw = this._cpRect.getWidth() / this._imageConf.zoom.ratio;
+			this._imageConf.sh = this._cpRect.getHeight() / this._imageConf.zoom.ratio;
+			this._imageConf.dw = this._cpRect.getWidth() / this._imageConf.zoom.ratio;
+			this._imageConf.dh = this._cpRect.getHeight() / this._imageConf.zoom.ratio;			
+			this.dispatchEvent({type:"crop"});
 		} else {
 			console.warn("Crop tool isn't active!");
 		}
@@ -117,4 +117,4 @@ class Crop extends ToolBase {
 }
 
 export { Crop };
-0
+
