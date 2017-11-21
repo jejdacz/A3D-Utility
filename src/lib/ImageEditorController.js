@@ -39,9 +39,6 @@ class ImageEditorController extends EventTarget{
 	static create(args) {
 		return new ImageEditorController(args.canvas);
 	}
-			
-	//get canvas() { return this._canvas;}
-	//get ctx() { return this._ctx;}
 	
 	getCanvas() {
 		return this._canvas;

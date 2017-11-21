@@ -12,10 +12,14 @@
 //TODO Grid controls
 //TODO Crop controls (ratio)
 //TODO Controls layout
-//TODO default draw style
+//TODO Default draw style
+//TODO Read file progressbar
+//TODO Read file onerror
 
+//FIXME Input check + error check
 //FIXME Code style
 //FIXME Event class
+//FIXME Crop tool's control points behavior when mouse out of canvas
 //FIXME No blank file
 
 import { ImageEditorController } from "./lib/ImageEditorController.js";
@@ -39,32 +43,26 @@ const gui = GUIController.create();
 const reader = new FileReader();
 
 /* Tool button click action */
-const clickTool = function(obj) {
-	console.log("but clicked");
+const clickTool = function(obj) {	
 	var tool = obj.data.tool;
-	if ($(this).hasClass("active")) {
-		console.log("but is alredy active");
+	if ($(this).hasClass("active")) {		
 		return;
 	} else {
 		$(IME_TOOLS + " button").removeClass("active");
 		ime.activateTool(tool);
-		$(this).addClass("active");
-		console.log("but activated");
+		$(this).addClass("active");		
 	}
 }
 
 /* Helper button click action */
-const clickHelper = function(obj) {
-	console.log("hlp clicked");
+const clickHelper = function(obj) {	
 	var helper = obj.data.helper;
 	if ($(this).hasClass("active")) {
 		ime.deactivateHelper(helper);
-		$(this).removeClass("active");
-		console.log("hlp deactivated");
+		$(this).removeClass("active");		
 	} else {		
 		ime.activateHelper(helper);
-		$(this).addClass("active");
-		console.log("hlp activated");
+		$(this).addClass("active");		
 	}
 }
 

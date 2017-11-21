@@ -2,10 +2,6 @@ body {
 	background-color: #aaa;
 }
 
-.container-fluid {
-	margin-top: 50px;
-}
-
 .panel {
 	background-color: #bbb;
 }
@@ -15,5 +11,3 @@ body {
     margin-right: auto;
     text-align: center;
 }
-
-

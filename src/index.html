@@ -26,24 +26,54 @@
 	color: red;
 	}
 	</style>
-	<body>
+	<body>		
 		<div class="container-fluid">
 			<div class="panel panel-default">
   				<div class="panel-heading">IMAGE EDITOR</div>
   				<div class="panel-body">
-  					
+  							
 							<form id="ime-openfile">
 								<div class="form-group">								
 									<input type="file" accept="image/*" required="required">
 								</div>														
 							</form>
-						
-						
+						<div class="form-group">
 							<div id="ime-tools" class="btn-group" role="group" aria-label="TOOLS">
 							</div>
 					
 							<div id="ime-helpers" class="btn-group" role="group" aria-label="HELPERS">						
 							</div>
+						</div>
+ 
+  
+							<!-- Extra controls -->
+						<div class="form-group">
+						<div class="input-group input-group-sm">
+							<span class="input-group-addon">cols</span>
+							<input type="text" class="form-control">
+						</div>	
+						
+						<div class="input-group input-group-sm">
+							<span class="input-group-addon">rows</span>
+							<input type="text" class="form-control">
+							
+						</div>
+						</div>
+					<div class="form-group">
+					<div class="btn-group" role="group">
+						 <button type="button" class="btn btn-warning btn-sm">Apply</button>
+						 </div>	
+						 </div>
+						 
+					
+</div>			
+								
+						
+							
+								
+						
+						
+							
 				</div>								
 			</div>
 			<div id="canvas-placeholder"></div>

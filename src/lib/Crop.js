@@ -1,5 +1,6 @@
 /**
- * Crop canvas tool.
+ * Crop tool.
+ * Modifies parameters for drawing image on canvas to simulate crop. 
  *
  * @author Marek Mego
  */
@@ -18,7 +19,7 @@ class Crop extends ToolBase {
 		this._cursorPrevPos = new Point(0,0);
 		this._onMouseMoveAction;
 		
-		// mouse listeners setup
+		// mouse event listeners setup
 		var md = (e) => this.onMouseDown(e);
 		this._disableMouseDown = function() {canvas.removeEventListener("mousedown", md)};
 		this._enableMouseDown = function() {canvas.addEventListener("mousedown", md)};
@@ -102,7 +103,7 @@ class Crop extends ToolBase {
 			this._imageConf.sw = this._cpRect.getWidth() / this._imageConf.zoom.ratio;
 			this._imageConf.sh = this._cpRect.getHeight() / this._imageConf.zoom.ratio;
 			this._imageConf.dw = this._cpRect.getWidth() / this._imageConf.zoom.ratio;
-			this._imageConf.dh = this._cpRect.getHeight() / this._imageConf.zoom.ratio;			
+			this._imageConf.dh = this._cpRect.getHeight() / this._imageConf.zoom.ratio;					
 			this.dispatchEvent({type:"crop"});
 		} else {
 			console.warn("Crop tool isn't active!");
