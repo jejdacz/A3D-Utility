@@ -4,73 +4,74 @@
  * @author Marek Mego
  */	
 
-import { EventTarget } from "./EventTarget.js";
+import { ToolBase } from "./ToolBase.js";
 	
-class Grid extends EventTarget{
+class Grid extends ToolBase{
 	constructor(canvas, rows, cols) {
 		super();
 		this._canvas = canvas;
 		this._rows = rows;
 		this._cols = cols;
-		this._lineWidth = 2.0;
-		this._active = false;				
+		this._lineWidth = 2.0;						
 		this._style = "rgba(0, 0, 0, 0.75)";
 	}
 	
 	static create(args) {
+		if (!args.canvas || !args.rows || !args.cols) throw "undefined parameter";
 		return new Grid(args.canvas, args.rows, args.cols);
 	}
-	
-	get canvas() {
-		return this._canvas;
-	}
-	
-	get active() {
-		return this._active;
-	}
-				
-	get rows() {return this._rows;}			
+					
+	getRows() {
+		return this._rows;
+	}			
 
-	set rows(val) {
+	setRows(val) {
 		this._rows = val;				
 		this.onChange();
 		return this;
 	}
 	
-	get cols() {return this._cols;}
+	getCols() {
+		return this._cols;
+	}
 
-	set cols(val) {
+	setCols(val) {
 		this._cols = val;
 		this.onChange();
 		return this;
 	}
 	
-	get style() {return this._style;}
+	getStyle() {
+		return this._style;
+	}
 
-	set style(val) {
+	setStyle(val) {
 		this._style = val;
 		this.onChange();
 		return this;
 	}
 	
-	get lineWidth() {return this._lineWidth;}
+	getLineWidth() {
+		return this._lineWidth;
+	}
 
-	set lineWidth(val) {
+	setLineWidth(val) {
 		this._lineWidth = val;
 		this.onChange();
 		return this;
 	}
+	
+	
+	
 
-	activate() {
-		this._active = true;				
-		this.onChange();
-		return this;		
+	onActivate() {						
+		this.drawOn();		
+		this.onChange();				
 	}
 
-	deactivate() {
-		this._active = false;
-		this.onChange();
-		return this;		
+	onDeactivate() {		
+		this.drawOff();		
+		this.onChange();				
 	}
 	
 	onChange() {
@@ -80,40 +81,37 @@ class Grid extends EventTarget{
 	/**
 	 * Draws grid to canvas.
 	 */
-	draw() {					
-		// if active draw
-		if (this.active) {
+	onDraw() {
 									
-			// read canvas size and compute grid offset
-			var offsetX = Math.floor(this.canvas.width / this.cols);
-			var offsetY = Math.floor(this.canvas.height / this.rows);
-	
-			// get canvas context2D
-			var ctx = this.canvas.getContext("2d");
+		// read canvas size and compute grid offset
+		var offsetX = Math.floor(this._canvas.width / this._cols);
+		var offsetY = Math.floor(this._canvas.height / this._rows);
+
+		// get canvas context2D
+		var ctx = this._canvas.getContext("2d");
+		
+		// set drawing style
+		ctx.lineWidth = this._lineWidth;
+		ctx.strokeStyle = this._style;
+		
+		ctx.beginPath();
+
+		// set cols
+		for (var i = 1; i < this._cols; i++) {				
+			ctx.moveTo(offsetX * i, 0);
+			ctx.lineTo(offsetX *i, this._canvas.height);
+		}
 			
-			// set drawing style
-			ctx.lineWidth = this.lineWidth;
-			ctx.strokeStyle = this.style;
-			
-			ctx.beginPath();
-	
-			// set cols
-			for (var i = 1; i < this.cols; i++) {				
-				ctx.moveTo(offsetX * i, 0);
-				ctx.lineTo(offsetX *i, this.canvas.height);
-			}
-				
-			// set rows
-			for (var i = 1; i < this.rows; i++) {				
-				ctx.moveTo(0, offsetY * i);
-				ctx.lineTo(this.canvas.width, offsetY * i);										
-			}
-			
-			ctx.closePath();
-	
-			// draw to canvas								
-			ctx.stroke();									
-		}		
+		// set rows
+		for (var i = 1; i < this._rows; i++) {				
+			ctx.moveTo(0, offsetY * i);
+			ctx.lineTo(this._canvas.width, offsetY * i);										
+		}
+		
+		ctx.closePath();
+
+		// draw to canvas								
+		ctx.stroke();
 	}
 }
 

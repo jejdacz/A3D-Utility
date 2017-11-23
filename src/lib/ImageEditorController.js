@@ -37,6 +37,7 @@ class ImageEditorController extends EventTarget{
 	}
 	
 	static create(args) {
+		if (!args.canvas) throw "undefined parameter";
 		return new ImageEditorController(args.canvas);
 	}
 	
@@ -189,11 +190,17 @@ class ImageEditorController extends EventTarget{
 												
 		// draw helpers
 		for (var i = 0, l = this._helpers.length; i < l; i++) {
+			this._ctx.save();
 			this._helpers[i].draw();
+			this._ctx.restore();
 		}
 		
 		// draw active tool
-		if (this._activeTool != null) this._activeTool.draw();
+		if (this._activeTool != null) {
+			this._ctx.save();
+			this._activeTool.draw();
+			this._ctx.restore();
+		}
 	}
 
 	

@@ -34,6 +34,7 @@ class Crop extends ToolBase {
 	}
 			
 	static create(args) {
+		if (!args.canvas || !args.imageConf) throw "undefined parameter";
 		return new Crop(args.canvas, args.imageConf);
 	}
 		
@@ -41,7 +42,7 @@ class Crop extends ToolBase {
 		this._cpRect.setBoundary(this._canvas.width, this._canvas.height);		
 		this._enableMouseDown();
 		this._enableMouseUp();
-		this._drawable = true;
+		this.drawOn();
 		this.onChange();		
 	}
 	
@@ -49,7 +50,7 @@ class Crop extends ToolBase {
 		this._disableMouseDown();
 		this._disableMouseUp();
 		this._disableMouseMove();
-		this._drawable = false;		
+		this.drawOff();		
 		this.onChange();	
 	}
 	
@@ -97,7 +98,7 @@ class Crop extends ToolBase {
 	}
 	
 	crop() {		
-		if (this._active) {
+		if (this.isActive()) {
 			this._imageConf.sx += this._cpRect.getPosition().getX() / this._imageConf.zoom.ratio;
 			this._imageConf.sy += this._cpRect.getPosition().getY() / this._imageConf.zoom.ratio;
 			this._imageConf.sw = this._cpRect.getWidth() / this._imageConf.zoom.ratio;
@@ -110,10 +111,8 @@ class Crop extends ToolBase {
 		}
 	}										
 	
-	draw() {		
-		if (this.drawable) {
-			this._cpRect.draw(this._canvas.getContext("2d"));									
-		}		
+	onDraw() {
+			this._cpRect.draw(this._canvas.getContext("2d"));
 	}	
 }
 

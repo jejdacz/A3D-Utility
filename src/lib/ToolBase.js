@@ -13,11 +13,13 @@ class ToolBase extends EventTarget {
 		this._drawable = false;				
 	}		
 	
-	get active() {return this._active;}
-	get drawable() {return this._drawable;}
+	isActive() {return this._active;}
+	isDrawable() {return this._drawable;}	
+	drawOn() {this._drawable = true;}
+	drawOff() {this._drawable = false;}
 	
 	activate() {
-		if (this._active == true) {
+		if (this.isActive()) {
 			console.warn("Activating active tool!");
 			return;
 		}		
@@ -26,7 +28,7 @@ class ToolBase extends EventTarget {
 	}
 	
 	deactivate() {
-		if (this._active == false) {
+		if (!this.isActive()) {
 			console.warn("Deactivating non-active tool!");
 			return;
 		}		
@@ -34,7 +36,11 @@ class ToolBase extends EventTarget {
 		this._active = false;		
 	}
 	
-	draw() {}
+	draw() {
+		if (this.isDrawable()) {
+			this.onDraw();
+		}
+	}
 }
 
 export { ToolBase };

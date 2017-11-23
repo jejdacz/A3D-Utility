@@ -9,12 +9,17 @@
  * - 3d file opening
  */
 
+//TODO insert 3d viewer
+//TODO openfile feature for 3d viewer
+
+//TODO init functions for every tool - code level of abstraction
+//TODO input type for valid input + hasError bootstrap
+//TODO use text characters for buttons
 //TODO Grid controls
 //TODO Crop controls (ratio)
 //TODO Controls layout
 //TODO Default draw style
 //TODO Read file progressbar
-//TODO Read file onerror
 
 //FIXME Input check + error check
 //FIXME Code style
@@ -24,7 +29,6 @@
 
 import { ImageEditorController } from "./lib/ImageEditorController.js";
 import { GUIController } from "./lib/GUIController.js";
-import { EventTarget } from "./lib/EventTarget.js";
 import { Grid } from "./lib/Grid.js";
 import { Meter } from "./lib/Meter.js";
 import { Crop } from "./lib/Crop.js";
@@ -37,10 +41,13 @@ const IME_OPENFILE = "#ime-openfile";
 const HELPER_BUTTON = "<button type=\"button\" class=\"btn btn-success btn-sm\">text</button>";
 const TOOL_BUTTON = "<button type=\"button\" class=\"btn btn-info btn-sm\">text</button>";
 
+const SET_INPUT = "<input type=\"text\" class=\"\">";
+
+const DEF_STROKE = "rgba(0, 0, 0, 0.75)";
+
 const $CANVAS = $("<canvas>", {text: "Your browser does not support the HTML5 canvas tag."});
-const ime = ImageEditorController.create({ canvas:$CANVAS[0] });
-const gui = GUIController.create();
-const reader = new FileReader();
+const	ime = ImageEditorController.create({ canvas:$CANVAS[0] });
+const	gui = GUIController.create();
 
 /* Tool button click action */
 const clickTool = function(obj) {	
@@ -69,16 +76,17 @@ const clickHelper = function(obj) {
 /**
  * On document ready actions.
  */
-$(function(){
-   	
-	initIME();
+$(function(){	
+	initTools();
 	initOpenFile();
+	initGUI();
 });
 
 /**
- * Image editor initialization.
+ * Image editor GUI initialization.
  */
-function initIME() {	
+function initGUI() {
+	
 	/* GUI setup */
 	gui.disableControls = function(){
 		$(IME_TOOLS + " button").prop("disabled", true);
@@ -89,14 +97,81 @@ function initIME() {
 		$(IME_TOOLS + " button").prop("disabled", false);
 		$(IME_HELPERS + " button").prop("disabled", false);
 	}
+	
+	// place canvas to page
+	$CANVAS.appendTo("#canvas-placeholder");
+	
+	// enable contols when file loaded
+	ime.addEventListener("imageload", () => gui.enableControls());
+	
+	// controls disabled by default
+	gui.disableControls();
+	
+	// set default image
+	ime.setImageSource("/static/blank.jpg");
+}
+
+/**
+ * Initialize image file opening form.
+ */	
+function initOpenFile() {
+	const reader = new FileReader();
+	
+	// open file form actions
+	$(IME_OPENFILE)
+		.submit(function(e) {		
+				e.preventDefault();
+			})
+		.change(function(e) {
+				
+			// disable controls on file loading
+			gui.disableControls();
+			
+			// read file
+			reader.readAsDataURL($(IME_OPENFILE + " input")[0].files[0]);
+			
+		});
+	
+	// on file load
+	reader.onload = function(){
+		var dataURL = reader.result;
 		
+		// validate file type
+		if ($(IME_OPENFILE + " input")[0].files[0].type.substring(0, 5) == "image") {	  			
+			
+			// pass src to editor
+			ime.setImageSource(dataURL);
+		} else {
+			
+			// pass src to editor, displays warning image
+			ime.setImageSource("/static/invalid.jpg");
+		}
+		
+		// clear information about file from the form
+		$(IME_OPENFILE)[0].reset();		
+	}
+	
+	// on file load error
+	reader.onerror = function(){
+	
+		// pass src to editor, displays warning image
+		ime.setImageSource("/static/invalid.jpg");
+		
+		// clear information about file from the form
+		$(IME_OPENFILE)[0].reset();
+	}
+}
+
+/**
+ * Initialize editor tools.
+ */
+function initTools() {
 	/* Create grid helper */
 	var grid = Grid.create({ canvas:ime.getCanvas(), rows:3, cols:3 });
 	ime.addHelper(grid); // ime calls draw()
-	grid.addEventListener("change", () => ime.draw());
-	var gridIcon = "<span class=\"glyphicon glyphicon-th\" aria-hidden=\"true\"></span>";	
+	grid.addEventListener("change", () => ime.draw());		
 	$(HELPER_BUTTON)
-		.html(gridIcon)
+		.text("#")
 		.click({helper:grid}, clickHelper)
 		.appendTo(IME_HELPERS);
 	
@@ -108,6 +183,35 @@ function initIME() {
 		.text("Meter")
 		.click({tool:meter}, clickTool)
 		.appendTo(IME_TOOLS);
+		
+	/* Grid settings */
+	//$(SET_LABEL)
+	//	.val("GRID")
+	//	.appendTo("#settings");
+	
+	// class valid-number for validation.... too much
+	
+	$(SET_INPUT)
+		.val("cols")
+		.change(function() {
+				if (isNaN($(this).val())) {
+					$(this).val("not number");
+				} else {
+					grid.setCols(Number($(this).val()));
+				}	
+			})
+		.appendTo("#settings");
+		
+	$(SET_INPUT)
+		.val("rows")
+		.change(function() {
+				if (isNaN($(this).val())) {
+					$(this).val("not number");
+				} else {
+					grid.setRows(Number($(this).val()));
+				}	
+			})
+		.appendTo("#settings");
 		
 	/* Create crop tool */
 	var crop = Crop.create({ canvas:ime.getCanvas(),imageConf:ime.getimageConf() });
@@ -130,7 +234,7 @@ function initIME() {
 		
 	$(HELPER_BUTTON)
 		.text("CropOk")
-		.click( () => {crop.crop();} )  // imageConf won't be modified during it's lifetime so CTOR injection is ok
+		.click( () => {crop.crop();} )
 		.appendTo(IME_HELPERS);
 		
 	$(HELPER_BUTTON)
@@ -147,56 +251,9 @@ function initIME() {
 		.text(" - ")
 		.click( () => ime.zoomOut() )	
 		.appendTo(IME_HELPERS);
-	
-	// place canvas to page
-	$CANVAS.appendTo("#canvas-placeholder");
-	
-	// enable contols when file loaded
-	ime.addEventListener("imageload", () => gui.enableControls());
-	
-	// set default image	
-	ime.setImageSource("/static/blank.jpg");
 }
 
-/**
- * Initialize image file opening form.
- */	
-function initOpenFile() {		
-	// open file form actions
-	$(IME_OPENFILE)
-		.submit(function(e) {
-		
-			e.preventDefault();
-		})		
-		.change(function(e) {
-		
-			// disable controls on file loading
-			gui.disableControls();
-			
-			// read file
-			reader.readAsDataURL($(IME_OPENFILE + " input")[0].files[0]);
-			
-		});
-	
-	// on file load
-	reader.onload = function(){
-  		var dataURL = reader.result;
-  		
-  		// validate file type
-  		if ($(IME_OPENFILE + " input")[0].files[0].type.substring(0, 5) == "image") {	  			
-  			
-  			// pass src to editor
-  			ime.setImageSource(dataURL);
-  		} else {
-  			
-  			// pass src to editor, displays warning image
-  			ime.setImageSource("/static/invalid.jpg");
-  		}
-  		
-  		// clear information about file from the form
-  		$(IME_OPENFILE)[0].reset();		
-	}
-}
+
 
 
 

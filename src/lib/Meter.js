@@ -29,6 +29,7 @@ class Meter extends ToolBase {
 	}
 	
 	static create(args) {
+		if (!args.canvas) throw "undefined parameter";
 		return new Meter(args.canvas);
 	}	
 	
@@ -39,14 +40,14 @@ class Meter extends ToolBase {
 		this._startPos.setY(y);
 		this._currentPos.setX(x);
 		this._currentPos.setY(y);		
-		this._drawable = true;		
+		this.drawOn();		
 		this._enableMouseMove();		
 		this._onMouseDownAction = (x, y) => this._finish(x, y);		
 	}
 	
 	_finish(x, y) {
 		console.log("mtr finish");
-		this._drawable = false;				
+		this.drawOff();				
 		this._onMouseDownAction = (x, y) => this._start(x, y);
 		this._disableMouseMove();		
 		this._inProcess = false;		
@@ -64,11 +65,10 @@ class Meter extends ToolBase {
 		// handle tool deactivation while still in process
 		if (this._inProcess) {
 			this._finish(this._currentPos.getX(), this._currentPos.getY());
-		}
-		this._drawable = false;		
+		}		
 		this._disableMouseDown();		
 		this._onMouseDownAction = (x, y) => this._start(x, y);
-		// dispatch event onDeactivate and bind callback to onchange
+		this.drawOff();
 		this.onChange();
 	}
 	
@@ -90,27 +90,26 @@ class Meter extends ToolBase {
 		this.dispatchEvent({type:"change"});		
 	}
 		
-	draw() {
+	onDraw() {
 		//TODO global drawing configuration
-		if (this.drawable) {
-			this._ctx.beginPath();
-			this._ctx.moveTo(this._startPos.getX(), this._startPos.getY());
-			this._ctx.lineTo(this._currentPos.getX(), this._currentPos.getY());
-			this._ctx.closePath();
-			this._ctx.shadowOffsetX = 1;
-			this._ctx.shadowOffsetY = 1;
-			this._ctx.shadowBlur = 1;
-			this._ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
-			this._ctx.lineWidth = 3;
-			this._ctx.strokeStyle = "rgba(255, 255, 0, 0.6)";					
-			this._ctx.stroke();
-			this._ctx.font = "16px Arial";
-			this._ctx.fillStyle = "rgba(255, 255, 0, 1.0)";
-			this._ctx.fillText(Math.round(this._startPos.distance(this._currentPos)) + " px", this._currentPos.getX(), this._currentPos.getY());
-			console.log("meter drawing");
-		}
+		this._ctx.beginPath();
+		this._ctx.moveTo(this._startPos.getX(), this._startPos.getY());
+		this._ctx.lineTo(this._currentPos.getX(), this._currentPos.getY());
+		this._ctx.closePath();
+		this._ctx.shadowOffsetX = 1;
+		this._ctx.shadowOffsetY = 1;
+		this._ctx.shadowBlur = 1;
+		this._ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+		this._ctx.lineWidth = 3;
+		this._ctx.strokeStyle = "rgba(255, 255, 0, 0.6)";					
+		this._ctx.stroke();
+		this._ctx.font = "16px Arial";
+		this._ctx.fillStyle = "rgba(255, 255, 0, 1.0)";
+		this._ctx.fillText(Math.round(this._startPos.distance(this._currentPos)) + " px", this._currentPos.getX(), this._currentPos.getY());
+		console.log("meter drawing");
 	}
 	
 }
 
 export { Meter };
+
