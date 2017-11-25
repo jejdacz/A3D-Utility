@@ -7,46 +7,80 @@
 		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 		<link rel="stylesheet" href="/bootstrap/bootstrap.min.css" />
 		<link rel="stylesheet" href="/bootstrap/bootstrap-theme.min.css" />
+		<link rel="stylesheet" href="/static/simple-sidebar.css">
 		<link rel="stylesheet" href="/static/styles.css" />
 		
 		<script src="/lib/jquery.min.js"></script>
 		<script src="/bootstrap/bootstrap.min.js"></script>
+		<script src="/bootstrap/bootstrap.bundle.min.js"></script>
 		<script type="module" src="main.js"></script>
 		
 		<title>Title of the document</title>
 	</head>
-	<style>
-	.active {
-	color: red;
-	}
-	</style>
+	
 	<body>		
-		<div class="container-fluid">
-			<div class="panel panel-default">
-  				<div class="panel-heading">IMAGE EDITOR</div>
-  				<div class="panel-body">
+			<div id="wrapper" class="toggled">
+
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <ul class="sidebar-nav" id="ime-tools">
+                <li class="sidebar-brand">
+                    <a href="#">
+                        Artists' utility
+                    </a>
+                </li>
+                <li>
+                    <a data-toggle="collapse" data-target="#open-3d" href="#">Open 3D</a>
+                </li>                
+                <li id="open-3d" class="collapse">
+										<form id="3d-openfile">																			
+											<input class="form-control input-sm" type="file" accept=".obj" required="required" style="width:auto;">
+									</form>
+								</li>
+                <li>
+                    <a href="#">Snapshot</a>
+                </li>
+                <li>
+                    <a data-toggle="collapse" data-target="#open-image" href="#">Open Image</a>
+                </li>                
+                <li id="open-image" class="collapse">
+										<form id="ime-openfile">																			
+											<input class="form-control input-sm" type="file" accept="image/*" required="required" style="width:auto;">
+									</form>
+								</li>
+								<li class="divider"></li>
+                               
+            </ul>
+        </div>
+        <!-- /#sidebar-wrapper -->
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+                <h1>Simple Sidebar</h1>
+                <p>This template has a responsive menu toggling system. The menu will appear collapsed on smaller screens, and will appear non-collapsed on larger screens. When toggled using the button below, the menu will appear/disappear. On small screens, the page content will be pushed off canvas.</p>
+                <p>Make sure to keep all page content within the <code>#page-content-wrapper</code>.</p>
+             <div id="canvas-placeholder"></div>   
+            </div>
+        </div>
+        <!-- /#page-content-wrapper -->
+
+    </div>		
+			
   							
-							<form id="ime-openfile">
-								<div class="form-group">								
-									<input type="file" accept="image/*" required="required">
-								</div>														
-							</form>
-						<div class="form-group">
-							<div id="ime-tools" class="btn-group" role="group" aria-label="TOOLS">
-							</div>
-					
-							<div id="ime-helpers" class="btn-group" role="group" aria-label="HELPERS">						
-							</div>
-						</div>
- 
-  						<div id="settings"></div>
+							
+							
+							
 						
+							
 					
-						 </div>	
-						 </div>
+							
+						
+ 
+  						
 						 
 					
-</div>			
+		
 								
 						
 							
@@ -54,9 +88,8 @@
 						
 						
 							
-				</div>								
-			</div>
-			<div id="canvas-placeholder"></div>
-		</div>		
+				
+			
+				
 	</body>
 </html>

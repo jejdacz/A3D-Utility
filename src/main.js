@@ -39,7 +39,9 @@ const IME_HELPERS = "#ime-helpers";
 const IME_OPENFILE = "#ime-openfile";
 
 const HELPER_BUTTON = "<button type=\"button\" class=\"btn btn-success btn-sm\">text</button>";
-const TOOL_BUTTON = "<button type=\"button\" class=\"btn btn-info btn-sm\">text</button>";
+const TOOL_BUTTON = "<a data-toggle=\"collapse\" data-target=\"#target\" href=\"#\">text</a>";
+const TOOL_SETTINGS = "<li id=\"target\" class=\"settings collapse\"></li>";
+
 
 const SET_INPUT = "<input type=\"text\" class=\"\">";
 
@@ -166,23 +168,64 @@ function initOpenFile() {
  * Initialize editor tools.
  */
 function initTools() {
-	/* Create grid helper */
-	var grid = Grid.create({ canvas:ime.getCanvas(), rows:3, cols:3 });
-	ime.addHelper(grid); // ime calls draw()
-	grid.addEventListener("change", () => ime.draw());		
-	$(HELPER_BUTTON)
-		.text("#")
-		.click({helper:grid}, clickHelper)
-		.appendTo(IME_HELPERS);
-	
+	/* Create cursor tool */
+	var cursor = NullTool.create();	
+	ime.addTool(cursor);	
+	$(TOOL_BUTTON)
+		.text("Cursor")
+		.click({tool:cursor}, clickTool)		
+		.appendTo(IME_TOOLS)		
+		.trigger("click") // activated by default
+		.wrap("<li></li>");
+		
 	/* Create meter tool */
 	var meter = Meter.create({ canvas:ime.getCanvas() });
 	ime.addTool(meter);	
 	meter.addEventListener("change", () => ime.draw());
 	$(TOOL_BUTTON)
 		.text("Meter")
-		.click({tool:meter}, clickTool)
-		.appendTo(IME_TOOLS);
+		.click({tool:meter}, clickTool)		
+		.appendTo(IME_TOOLS)
+		.wrap("<li></li>");
+		
+	/* Create crop tool */
+	var crop = Crop.create({ canvas:ime.getCanvas(),imageConf:ime.getimageConf() });
+	ime.addTool(crop);	
+	crop.addEventListener("change", () => ime.draw());
+	crop.addEventListener("crop", () => ime.imageConfigModified());
+	var btnCrop = $(TOOL_BUTTON)
+		.text("Crop")
+		.attr("data-target","#crop-settings")
+		.click(() => {
+				if (!crop.isActive()) ime.activateTool(crop);
+			})		
+		.appendTo(IME_TOOLS)
+		.wrap("<li></li>");
+		
+	crop.addEventListener("activate", () => btnCrop.addClass("active"));
+	crop.addEventListener("deactivate", () => btnCrop.removeClass("active"));
+		
+	// append settings
+	var setCrop = $(TOOL_SETTINGS)
+		.attr("id","crop-settings")
+		.append("<label for=\"crop-settings-ratio\">Ratio:</label>")
+		.append("<input type=\"number\" class=\"input-sm\" id=\"crop-settings-ratio\">")		
+		.appendTo(IME_TOOLS);		
+		
+	crop.addEventListener("deactivate", () => setCrop.collapse("hide"));
+		
+	
+	/* Create grid helper */
+	var grid = Grid.create({ canvas:ime.getCanvas(), rows:3, cols:3 });
+	ime.addHelper(grid); // ime calls draw()
+	grid.addEventListener("change", () => ime.draw());		
+	$(HELPER_BUTTON)
+		.text("#")
+		.click({helper:grid}, clickHelper)		
+		.appendTo(IME_HELPERS)
+		.wrap("<li></li>");
+	
+	
 		
 	/* Grid settings */
 	//$(SET_LABEL)
@@ -213,44 +256,29 @@ function initTools() {
 			})
 		.appendTo("#settings");
 		
-	/* Create crop tool */
-	var crop = Crop.create({ canvas:ime.getCanvas(),imageConf:ime.getimageConf() });
-	ime.addTool(crop);	
-	crop.addEventListener("change", () => ime.draw());
-	crop.addEventListener("crop", () => {ime.imageConfigModified();});
-	$(TOOL_BUTTON)
-		.text("Crop")
-		.click({tool:crop}, clickTool)
-		.appendTo(IME_TOOLS);
-			
-	/* Create cursor tool */
-	var cursor = NullTool.create();	
-	ime.addTool(cursor);	
-	$(TOOL_BUTTON)
-		.text("Cursor")
-		.click({tool:cursor}, clickTool)
-		.appendTo(IME_TOOLS)
-		.trigger("click"); // activated by default
-		
 	$(HELPER_BUTTON)
 		.text("CropOk")
-		.click( () => {crop.crop();} )
-		.appendTo(IME_HELPERS);
+		.click( () => {crop.crop();} )		
+		.appendTo(IME_HELPERS)
+		.wrap("<li></li>");
 		
 	$(HELPER_BUTTON)
 		.text("Restore")
-		.click( () => ime.restore() )
-		.appendTo(IME_HELPERS);
+		.click( () => ime.restore() )		
+		.appendTo(IME_HELPERS)
+		.wrap("<li></li>");
 		
 	$(HELPER_BUTTON)
 		.text(" + ")
 		.click( () => ime.zoomIn() )		
-		.appendTo(IME_HELPERS);
+		.appendTo(IME_HELPERS)
+		.wrap("<li></li>");
 		
 	$(HELPER_BUTTON)
 		.text(" - ")
-		.click( () => ime.zoomOut() )	
-		.appendTo(IME_HELPERS);
+		.click( () => ime.zoomOut() )		
+		.appendTo(IME_HELPERS)
+		.wrap("<li></li>");
 }
 
 

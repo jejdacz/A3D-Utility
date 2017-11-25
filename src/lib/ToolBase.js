@@ -24,7 +24,8 @@ class ToolBase extends EventTarget {
 			return;
 		}		
 		this.onActivate();
-		this._active = true;		
+		this._active = true;
+		this.dispatchEvent(new Event("activate"));		
 	}
 	
 	deactivate() {
@@ -33,7 +34,8 @@ class ToolBase extends EventTarget {
 			return;
 		}		
 		this.onDeactivate();
-		this._active = false;		
+		this._active = false;
+		this.dispatchEvent(new Event("deactivate"));		
 	}
 	
 	draw() {
