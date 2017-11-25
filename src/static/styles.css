@@ -16,12 +16,18 @@ input[type="number"] {
 }
 
 .settings {
-	background: rgba(255, 255, 255, 0.3);		
+	background: rgba(255, 255, 255, 0.3);			
 }
 
 .settings label{
 	font-size: 12px;
 	font-weight: 100;
 	color:#fff;	
+}
+
+.settings ul{
+  margin: 0;
+  padding: 0;
+  list-style: none;  
 }
 

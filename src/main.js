@@ -213,48 +213,61 @@ function initTools() {
 		.appendTo(IME_TOOLS);		
 		
 	crop.addEventListener("deactivate", () => setCrop.collapse("hide"));
-		
 	
+	// insert divider to the list
+	$("<li class=\"divider\"></li>").appendTo(IME_TOOLS);
+		
 	/* Create grid helper */
 	var grid = Grid.create({ canvas:ime.getCanvas(), rows:3, cols:3 });
 	ime.addHelper(grid); // ime calls draw()
 	grid.addEventListener("change", () => ime.draw());		
-	$(HELPER_BUTTON)
-		.text("#")
-		.click({helper:grid}, clickHelper)		
-		.appendTo(IME_HELPERS)
+	var $btnGrid = $(TOOL_BUTTON)
+		.text("Grid")
+		.attr("data-target","#grid-settings")
+		.click(() => {
+				if (!grid.isActive()) {
+					ime.activateHelper(grid);
+				} else {
+					ime.deactivateHelper(grid);
+				}
+			})		
+		.appendTo(IME_TOOLS)
 		.wrap("<li></li>");
 	
+	grid.addEventListener("activate", () => $btnGrid.addClass("active"));
+	grid.addEventListener("deactivate", () => $btnGrid.removeClass("active"));
 	
+	// append settings
+	var $setGrid = $(TOOL_SETTINGS)
+		.attr("id","grid-settings")
+		.append("<ul>" +
+							"<li>" +
+								"<label for=\"grid-settings-rows\">Rows:</label>" + 
+								"<input type=\"number\" min=\"1\" class=\"input-sm\" id=\"grid-settings-rows\">" +
+							"</li>" +
+							"<li>" +
+								"<label for=\"grid-settings-rows\">Cols:</label>" +
+								"<input type=\"number\" min=\"1\" class=\"input-sm\" id=\"grid-settings-cols\">" +
+							"</li>" +
+							"<li>" +								
+								"<button type=\"button\" class=\"btn btn-sm btn-success\" id=\"grid-settings-apply\">Apply</button>" +
+							"</li>" +
+						"</ul>")		
+		.appendTo(IME_TOOLS);
 		
-	/* Grid settings */
-	//$(SET_LABEL)
-	//	.val("GRID")
-	//	.appendTo("#settings");
+	grid.addEventListener("deactivate", () => $setGrid.collapse("hide"));
 	
-	// class valid-number for validation.... too much
-	
-	$(SET_INPUT)
-		.val("cols")
-		.change(function() {
-				if (isNaN($(this).val())) {
-					$(this).val("not number");
+	$("#grid-settings-rows").val(grid.getRows());
+	$("#grid-settings-cols").val(grid.getCols());	
+	$("#grid-settings-apply")	
+		.click(function() {				
+				if (isNaN($("#grid-settings-rows").val() || $("#grid-settings-cols").val())) {
+					console.log("not a number");
 				} else {
-					grid.setCols(Number($(this).val()));
+					grid.setRows(Number($("#grid-settings-rows").val()));
+					grid.setCols(Number($("#grid-settings-cols").val()));
 				}	
-			})
-		.appendTo("#settings");
-		
-	$(SET_INPUT)
-		.val("rows")
-		.change(function() {
-				if (isNaN($(this).val())) {
-					$(this).val("not number");
-				} else {
-					grid.setRows(Number($(this).val()));
-				}	
-			})
-		.appendTo("#settings");
+	});
 		
 	$(HELPER_BUTTON)
 		.text("CropOk")
