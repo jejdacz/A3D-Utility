@@ -10,6 +10,12 @@
 		<link rel="stylesheet" href="/static/simple-sidebar.css">
 		<link rel="stylesheet" href="/static/styles.css" />
 		
+		<script src="/3dviewer/three.js"></script>
+    <script src="/3dviewer/Detector.js"></script>
+    <script src="/3dviewer/OrbitControls.js"></script>
+    <script src="/3dviewer/OBJLoader.js"></script>
+    <script src="/3dviewer/MTLLoader.js"></script>
+		
 		<script src="/lib/jquery.min.js"></script>
 		<script src="/bootstrap/bootstrap.min.js"></script>
 		<script src="/bootstrap/bootstrap.bundle.min.js"></script>
@@ -30,15 +36,15 @@
                     </a>
                 </li>
                 <li>
-                    <button type="button" class="btn btn-info btn-sm" id="open-3d">Open 3D</button>
+                    <button type="button" class="btn btn-info btn-sm" id="open-three">Open 3D</button>
                 </li>                
                 <li class="collapse">
-									<form id="3d-openfile">																		
-											<input id="inputfile-3d" class="input-sm" type="file" accept=".obj" required="required" >
+									<form id="three-openfile">																		
+											<input id="inputfile-three" class="input-sm" type="file" accept=".obj" required="required">
 									</form>
 								</li>
                 <li>
-                    <button type="button" class="btn btn-info btn-sm" >Snapshot</button>
+                    <button type="button" class="btn btn-info btn-sm" id="snapshot">Snapshot</button>
                 </li>
                 <li>
                     <button type="button" class="btn btn-info btn-sm" id="open-image" >Open Image</button>
@@ -57,7 +63,7 @@
         <!-- Page Content -->
         <div id="page-content-wrapper">
        			<div class="container-fluid">                
-             <div id="3d-canvas-placeholder"></div>   
+             <div id="three-canvas-placeholder"></div>   
             </div>
             <div class="container-fluid">                
              <div id="canvas-placeholder"></div>   
@@ -67,13 +73,190 @@
 
     </div>
 		<script>
-			$("#open-3d").click(function(){
-				$("#inputfile-3d").trigger("click");
+			
+			var basePath = "/3dviewer/assets/";
+			var objData;
+			
+			$("#open-three").click(function(){
+				$("#inputfile-three").trigger("click");
 			});
 	
 			$("#open-image").click(function(){
 				$("#inputfile-image").trigger("click");
 			});
+			
+			$(window).resize(function(){
+				$("#three-canvas-placeholder").height(window.innerHeight);
+			});
+			
+			$("#three-canvas-placeholder").height(window.innerHeight);
+			
+						/**
+			 * Initialize obj file opening form.
+			 */	
+			function initOpenObjFile() {
+				const reader = new FileReader();
+	
+				// open file form actions
+				$("#three-openfile")
+					.submit(function(e) {		
+							e.preventDefault();
+						})
+					.change(function(e) {
+						
+						objData = $("#three-openfile input")[0].files[0];
+						init();
+        	animate();
+        	//$("#three-openfile")[0].reset();
+			
+					});
+	
+				
+			}
+						
+			if (!Detector.webgl) {
+            Detector.addGetWebGLMessage();
+        }
+
+        var container = document.getElementById("three-canvas-placeholder");
+
+        var camera, controls, scene, renderer;
+        var lighting, ambient, keyLight, fillLight, backLight;
+
+        var windowHalfX = container.left + container.offsetWidth / 2;
+        var windowHalfY = container.top + container.offsetHeight / 2;
+
+        //init();
+        //animate();
+        initOpenObjFile();
+
+        function init() {
+
+            /* Camera */
+
+            camera = new THREE.PerspectiveCamera(15, container.offsetWidth / container.offsetHeight, 1, 1000);
+            camera.position.z = 3;
+
+            /* Scene */
+
+            scene = new THREE.Scene();
+            lighting = false;
+
+            ambient = new THREE.AmbientLight(0xffffff, 1.0);
+            scene.add(ambient);
+
+            keyLight = new THREE.DirectionalLight(new THREE.Color('hsl(30, 100%, 75%)'), 1.0);
+            keyLight.position.set(-100, 0, 100);
+
+            fillLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 100%, 75%)'), 0.75);
+            fillLight.position.set(100, 0, 100);
+
+            backLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            backLight.position.set(100, 0, -100).normalize();
+
+            /* Model */
+
+            var mtlLoader = new THREE.MTLLoader();
+            mtlLoader.setBaseUrl('/3dviewer/assets/');
+            //mtlLoader.setBaseUrl(basePath);
+            //mtlLoader.setPath(basePath);
+            mtlLoader.setPath('/3dviewer/assets/');
+            mtlLoader.load('female-croupier-2013-03-26.mtl', function (materials) {
+
+                materials.preload();
+
+                materials.materials.default.map.magFilter = THREE.NearestFilter;
+                materials.materials.default.map.minFilter = THREE.LinearFilter;
+
+                var objLoader = new THREE.OBJLoader();
+                objLoader.setMaterials(materials);
+                objLoader.setPath('/3dviewer/assets/');
+                //objLoader.setPath(basePath);
+                //objLoader.load('female-croupier-2013-03-26.obj', function (object) {
+                objLoader.load(objData, function (object) {
+
+                    scene.add(object);
+
+                });
+
+            });
+
+            /* Renderer */
+
+            renderer = new THREE.WebGLRenderer({preserveDrawingBuffer: true});            
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
+            renderer.setClearColor(new THREE.Color("hsl(0, 0%, 10%)"));
+
+            container.appendChild(renderer.domElement);
+
+            /* Controls */
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.25;
+            controls.enableZoom = true;
+
+            /* Events */
+
+            window.addEventListener('resize', onWindowResize, false);
+            window.addEventListener('keydown', onKeyboardEvent, false);
+
+        }
+
+        function onWindowResize() {
+
+            windowHalfX = container.left + container.offsetWidth / 2;
+            windowHalfY = container.top + container.offsetHeight / 2;
+
+            camera.aspect = container.offsetWidth / container.offsetHeight;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
+
+        }
+
+        function onKeyboardEvent(e) {
+
+            if (e.code === 'KeyL') {
+
+                lighting = !lighting;
+
+                if (lighting) {
+
+                    ambient.intensity = 0.25;
+                    scene.add(keyLight);
+                    scene.add(fillLight);
+                    scene.add(backLight);
+
+                } else {
+
+                    ambient.intensity = 1.0;
+                    scene.remove(keyLight);
+                    scene.remove(fillLight);
+                    scene.remove(backLight);
+
+                }
+
+            }
+
+        }
+
+        function animate() {
+
+            requestAnimationFrame(animate);
+
+            controls.update();
+
+            render();
+
+        }
+
+        function render() {
+
+            renderer.render(scene, camera);
+
+        }
 		</script>		
 	</body>
 </html>

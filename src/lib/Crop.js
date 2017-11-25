@@ -37,6 +37,14 @@ class Crop extends ToolBase {
 		if (!args.canvas || !args.imageConf) throw "undefined parameter";
 		return new Crop(args.canvas, args.imageConf);
 	}
+	
+	getWidth() {
+		return this._cpRect.getWidth();		
+	}
+	
+	getHeight() {
+		return this._cpRect.getHeight();		
+	}
 		
 	onActivate() {		
 		this._cpRect.setBoundary(this._canvas.width, this._canvas.height);		
@@ -93,8 +101,8 @@ class Crop extends ToolBase {
 		this.onChange();			 
 	}
 			
-	onChange() {
-		this.dispatchEvent({type:"change"});
+	onChange() {		
+		this.dispatchEvent(new Event("change"));
 	}
 	
 	crop() {		

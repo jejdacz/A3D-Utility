@@ -16,8 +16,6 @@
 
 //TODO Default draw style
 
-
-//FIXME Input check + error check
 //FIXME Code style
 //FIXME Event class
 //FIXME Crop tool's control points behavior when mouse out of canvas
@@ -167,6 +165,7 @@ function initOpenFile() {
  * Initialize editor tools.
  */
 function initTools() {
+
 	/* Create cursor tool */
 	var cursor = NullTool.create();	
 	ime.addTool(cursor);	
@@ -182,6 +181,7 @@ function initTools() {
 	cursor.addEventListener("deactivate", () => $btnCursor.removeClass("active"));
 	
 	$btnCursor.trigger("click"); // activated by default
+	
 		
 	/* Create meter tool */
 	var meter = Meter.create({ canvas:ime.getCanvas() });
@@ -197,6 +197,7 @@ function initTools() {
 		
 	meter.addEventListener("activate", () => $btnMeter.addClass("active"));
 	meter.addEventListener("deactivate", () => $btnMeter.removeClass("active"));
+	
 		
 	/* Create crop tool */
 	var crop = Crop.create({ canvas:ime.getCanvas(),imageConf:ime.getimageConf() });
@@ -223,30 +224,37 @@ function initTools() {
 								"<label for=\"crop-settings-width\">Width:</label>" +
 							"</li>" +
 							"<li>" +
-								"<input type=\"number\" class=\"input-sm\" id=\"crop-settings-width\">" +
-							"</li>" +
+								"<label class=\"value\" id=\"crop-settings-width\"></label>" +
+							"</li>" +							
 							"<li>" +
 								"<label for=\"crop-settings-height\">Height:</label>" +
 							"</li>" +
 							"<li>" +
-								"<input type=\"number\" class=\"input-sm\" id=\"crop-settings-height\">" +
-							"</li>" +
+								"<label class=\"value\" id=\"crop-settings-height\"></label>" +
+							"</li>" +							
 							"<li>" +
 								"<label for=\"crop-settings-ratio\">Ratio:</label>" +
 							"</li>" +
 							"<li>" +
-								"<input type=\"number\" class=\"input-sm\" id=\"crop-settings-ratio\">" +
-							"</li>" +
+								"<label class=\"value\" id=\"crop-settings-ratio\"></label>" +
+							"</li>" +							
 							"<li>" +
 								"<button type=\"button\" class=\"btn btn-danger btn-sm\" id=\"crop-settings-apply\">Apply crop</button>" +
 							"</li>" +
 						"</ul>")
 		.appendTo(IME_TOOLS);
 		
-	$("#crop-settings-apply").click(() => crop.crop());		
+	$("#crop-settings-apply").click(() => crop.crop());
+	
+	crop.addEventListener("change", () => {
+		$("#crop-settings-width").text(crop.getWidth());
+		$("#crop-settings-height").text(crop.getHeight());
+		$("#crop-settings-ratio").text(Math.round((crop.getWidth()/crop.getHeight())*100)/100);
+	});
 		
 	//crop.addEventListener("activate", () => $setCrop.collapse("show"));
-	crop.addEventListener("deactivate", () => $setCrop.collapse("hide"));	
+	crop.addEventListener("deactivate", () => $setCrop.collapse("hide"));
+		
 			
 	/* Create grid helper */
 	var grid = Grid.create({ canvas:ime.getCanvas(), rows:3, cols:3 });
@@ -303,6 +311,8 @@ function initTools() {
 			grid.setRows(Number($(this).val()));
 		}
 	});
+	
+	/* Create restore and zoom buttons */
 			
 	var $btnRestore = $(HELPER_BUTTON)
 		.text("Restore")
@@ -324,9 +334,9 @@ function initTools() {
 		.append($btnZoomIn)
 		.append($btnZoomOut)
 		.appendTo(IME_TOOLS);
+		
+	$("#snapshot").click(function(){
+				ime.setImageSource(window.renderer.domElement.toDataURL());				
+	});
 }
-
-
-
-
 
