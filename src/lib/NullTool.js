@@ -12,8 +12,9 @@ class NullTool extends ToolBase {
 		return new NullTool();
 	}
 	
-	activate(){}
-	deactivate(){}
+	onActivate(){}
+	onDeactivate(){}
+	onDraw(){}
 }
 
 export { NullTool };	

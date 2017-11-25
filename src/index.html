@@ -26,29 +26,29 @@
             <ul class="sidebar-nav" id="ime-tools">
                 <li class="sidebar-brand">
                     <a href="#">
-                        Artists' utility
+                        A3D utility
                     </a>
                 </li>
                 <li>
-                    <a data-toggle="collapse" data-target="#open-3d" href="#">Open 3D</a>
+                    <button type="button" class="btn btn-info btn-sm" id="open-3d">Open 3D</button>
                 </li>                
-                <li id="open-3d" class="collapse">
-										<form id="3d-openfile">																			
-											<input class="form-control input-sm" type="file" accept=".obj" required="required" style="width:auto;">
+                <li class="collapse">
+									<form id="3d-openfile">																		
+											<input id="inputfile-3d" class="input-sm" type="file" accept=".obj" required="required" >
 									</form>
 								</li>
                 <li>
-                    <a href="#">Snapshot</a>
+                    <button type="button" class="btn btn-info btn-sm" >Snapshot</button>
                 </li>
                 <li>
-                    <a data-toggle="collapse" data-target="#open-image" href="#">Open Image</a>
+                    <button type="button" class="btn btn-info btn-sm" id="open-image" >Open Image</button>
                 </li>                
-                <li id="open-image" class="collapse">
-										<form id="ime-openfile">																			
-											<input class="form-control input-sm" type="file" accept="image/*" required="required" style="width:auto;">
+                <li class="collapse">
+									<form id="ime-openfile">																				
+											<input id="inputfile-image" class="form-control input-sm" type="file" accept="image/*" required="required" >
 									</form>
 								</li>
-								<li class="divider"></li>
+								
                                
             </ul>
         </div>
@@ -56,16 +56,24 @@
 
         <!-- Page Content -->
         <div id="page-content-wrapper">
-            <div class="container-fluid">
-                <h1>Simple Sidebar</h1>
-                <p>This template has a responsive menu toggling system. The menu will appear collapsed on smaller screens, and will appear non-collapsed on larger screens. When toggled using the button below, the menu will appear/disappear. On small screens, the page content will be pushed off canvas.</p>
-                <p>Make sure to keep all page content within the <code>#page-content-wrapper</code>.</p>
+       			<div class="container-fluid">                
+             <div id="3d-canvas-placeholder"></div>   
+            </div>
+            <div class="container-fluid">                
              <div id="canvas-placeholder"></div>   
             </div>
         </div>
         <!-- /#page-content-wrapper -->
 
     </div>
-				
+		<script>
+			$("#open-3d").click(function(){
+				$("#inputfile-3d").trigger("click");
+			});
+	
+			$("#open-image").click(function(){
+				$("#inputfile-image").trigger("click");
+			});
+		</script>		
 	</body>
 </html>

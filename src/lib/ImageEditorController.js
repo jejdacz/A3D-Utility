@@ -186,8 +186,6 @@ class ImageEditorController extends EventTarget{
 												this._imageConf.dh * this._imageConf.zoom.ratio,
 												);
 												
-		console.log(JSON.stringify(this._imageConf));		
-												
 		// draw helpers
 		for (var i = 0, l = this._helpers.length; i < l; i++) {
 			this._ctx.save();

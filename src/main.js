@@ -13,13 +13,9 @@
 //TODO openfile feature for 3d viewer
 
 //TODO init functions for every tool - code level of abstraction
-//TODO input type for valid input + hasError bootstrap
-//TODO use text characters for buttons
-//TODO Grid controls
-//TODO Crop controls (ratio)
-//TODO Controls layout
+
 //TODO Default draw style
-//TODO Read file progressbar
+
 
 //FIXME Input check + error check
 //FIXME Code style
@@ -38,8 +34,9 @@ const IME_TOOLS = "#ime-tools";
 const IME_HELPERS = "#ime-helpers";
 const IME_OPENFILE = "#ime-openfile";
 
-const HELPER_BUTTON = "<button type=\"button\" class=\"btn btn-success btn-sm\">text</button>";
-const TOOL_BUTTON = "<a data-toggle=\"collapse\" data-target=\"#target\" href=\"#\">text</a>";
+const HELPER_BUTTON = "<button type=\"button\" class=\"btn btn-success btn-sm\" data-toggle=\"collapse\" data-target=\"#target\">text</button>";
+const TOOL_BUTTON2 = "<a data-toggle=\"collapse\" data-target=\"#target\" href=\"#\">text</a>";
+const TOOL_BUTTON = "<button type=\"button\" class=\"btn btn-warning btn-sm\" data-toggle=\"collapse\" data-target=\"#target\">text</button>";
 const TOOL_SETTINGS = "<li id=\"target\" class=\"settings collapse\"></li>";
 
 
@@ -78,10 +75,12 @@ const clickHelper = function(obj) {
 /**
  * On document ready actions.
  */
-$(function(){	
+$(function(){
+	
 	initTools();
 	initOpenFile();
 	initGUI();
+	
 });
 
 /**
@@ -171,29 +170,40 @@ function initTools() {
 	/* Create cursor tool */
 	var cursor = NullTool.create();	
 	ime.addTool(cursor);	
-	$(TOOL_BUTTON)
-		.text("Cursor")
-		.click({tool:cursor}, clickTool)		
-		.appendTo(IME_TOOLS)		
-		.trigger("click") // activated by default
+	var $btnCursor = $(TOOL_BUTTON)
+		.text("Cursor")		
+		.click(() => {
+				if (!cursor.isActive()) ime.activateTool(cursor);
+			})		
+		.appendTo(IME_TOOLS)		 
 		.wrap("<li></li>");
+		
+	cursor.addEventListener("activate", () => $btnCursor.addClass("active"));
+	cursor.addEventListener("deactivate", () => $btnCursor.removeClass("active"));
+	
+	$btnCursor.trigger("click"); // activated by default
 		
 	/* Create meter tool */
 	var meter = Meter.create({ canvas:ime.getCanvas() });
 	ime.addTool(meter);	
 	meter.addEventListener("change", () => ime.draw());
-	$(TOOL_BUTTON)
+	var $btnMeter = $(TOOL_BUTTON)
 		.text("Meter")
-		.click({tool:meter}, clickTool)		
+		.click(() => {
+				if (!meter.isActive()) ime.activateTool(meter);
+			})		
 		.appendTo(IME_TOOLS)
 		.wrap("<li></li>");
+		
+	meter.addEventListener("activate", () => $btnMeter.addClass("active"));
+	meter.addEventListener("deactivate", () => $btnMeter.removeClass("active"));
 		
 	/* Create crop tool */
 	var crop = Crop.create({ canvas:ime.getCanvas(),imageConf:ime.getimageConf() });
 	ime.addTool(crop);	
 	crop.addEventListener("change", () => ime.draw());
 	crop.addEventListener("crop", () => ime.imageConfigModified());
-	var btnCrop = $(TOOL_BUTTON)
+	var $btnCrop = $(TOOL_BUTTON)
 		.text("Crop")
 		.attr("data-target","#crop-settings")
 		.click(() => {
@@ -202,26 +212,47 @@ function initTools() {
 		.appendTo(IME_TOOLS)
 		.wrap("<li></li>");
 		
-	crop.addEventListener("activate", () => btnCrop.addClass("active"));
-	crop.addEventListener("deactivate", () => btnCrop.removeClass("active"));
+	crop.addEventListener("activate", () => $btnCrop.addClass("active"));
+	crop.addEventListener("deactivate", () => $btnCrop.removeClass("active"));
 		
 	// append settings
-	var setCrop = $(TOOL_SETTINGS)
+	var $setCrop = $(TOOL_SETTINGS)
 		.attr("id","crop-settings")
-		.append("<label for=\"crop-settings-ratio\">Ratio:</label>")
-		.append("<input type=\"number\" class=\"input-sm\" id=\"crop-settings-ratio\">")		
-		.appendTo(IME_TOOLS);		
+		.append("<ul>" +
+							"<li>" +
+								"<label for=\"crop-settings-width\">Width:</label>" +
+							"</li>" +
+							"<li>" +
+								"<input type=\"number\" class=\"input-sm\" id=\"crop-settings-width\">" +
+							"</li>" +
+							"<li>" +
+								"<label for=\"crop-settings-height\">Height:</label>" +
+							"</li>" +
+							"<li>" +
+								"<input type=\"number\" class=\"input-sm\" id=\"crop-settings-height\">" +
+							"</li>" +
+							"<li>" +
+								"<label for=\"crop-settings-ratio\">Ratio:</label>" +
+							"</li>" +
+							"<li>" +
+								"<input type=\"number\" class=\"input-sm\" id=\"crop-settings-ratio\">" +
+							"</li>" +
+							"<li>" +
+								"<button type=\"button\" class=\"btn btn-danger btn-sm\" id=\"crop-settings-apply\">Apply crop</button>" +
+							"</li>" +
+						"</ul>")
+		.appendTo(IME_TOOLS);
 		
-	crop.addEventListener("deactivate", () => setCrop.collapse("hide"));
-	
-	// insert divider to the list
-	$("<li class=\"divider\"></li>").appendTo(IME_TOOLS);
+	$("#crop-settings-apply").click(() => crop.crop());		
 		
+	//crop.addEventListener("activate", () => $setCrop.collapse("show"));
+	crop.addEventListener("deactivate", () => $setCrop.collapse("hide"));	
+			
 	/* Create grid helper */
 	var grid = Grid.create({ canvas:ime.getCanvas(), rows:3, cols:3 });
 	ime.addHelper(grid); // ime calls draw()
 	grid.addEventListener("change", () => ime.draw());		
-	var $btnGrid = $(TOOL_BUTTON)
+	var $btnGrid = $(HELPER_BUTTON)
 		.text("Grid")
 		.attr("data-target","#grid-settings")
 		.click(() => {
@@ -248,10 +279,7 @@ function initTools() {
 							"<li>" +
 								"<label for=\"grid-settings-rows\">Cols:</label>" +
 								"<input type=\"number\" min=\"1\" class=\"input-sm\" id=\"grid-settings-cols\">" +
-							"</li>" +
-							"<li>" +								
-								"<button type=\"button\" class=\"btn btn-sm btn-success\" id=\"grid-settings-apply\">Apply</button>" +
-							"</li>" +
+							"</li>" +							
 						"</ul>")		
 		.appendTo(IME_TOOLS);
 		
@@ -259,39 +287,43 @@ function initTools() {
 	
 	$("#grid-settings-rows").val(grid.getRows());
 	$("#grid-settings-cols").val(grid.getCols());	
-	$("#grid-settings-apply")	
-		.click(function() {				
-				if (isNaN($("#grid-settings-rows").val() || $("#grid-settings-cols").val())) {
-					console.log("not a number");
-				} else {
-					grid.setRows(Number($("#grid-settings-rows").val()));
-					grid.setCols(Number($("#grid-settings-cols").val()));
-				}	
+	
+	$("#grid-settings-cols").on("input", function() {
+		if (isNaN($(this).val())) {
+			console.log("not a number");
+		} else {
+			grid.setCols(Number($(this).val()));
+		}
 	});
-		
-	$(HELPER_BUTTON)
-		.text("CropOk")
-		.click( () => {crop.crop();} )		
-		.appendTo(IME_HELPERS)
-		.wrap("<li></li>");
-		
-	$(HELPER_BUTTON)
+	
+	$("#grid-settings-rows").on("input", function() {
+		if (isNaN($(this).val())) {
+			console.log("not a number");
+		} else {
+			grid.setRows(Number($(this).val()));
+		}
+	});
+			
+	var $btnRestore = $(HELPER_BUTTON)
 		.text("Restore")
-		.click( () => ime.restore() )		
-		.appendTo(IME_HELPERS)
-		.wrap("<li></li>");
+		.click(() => ime.restore())
+		.appendTo(IME_TOOLS)
+		.wrap("<li></li>");		
 		
-	$(HELPER_BUTTON)
+	var $btnZoomIn = $(HELPER_BUTTON)
 		.text(" + ")
-		.click( () => ime.zoomIn() )		
-		.appendTo(IME_HELPERS)
-		.wrap("<li></li>");
+		.addClass("half")
+		.click(() => ime.zoomIn());				
 		
-	$(HELPER_BUTTON)
+	var $btnZoomOut = $(HELPER_BUTTON)
 		.text(" - ")
-		.click( () => ime.zoomOut() )		
-		.appendTo(IME_HELPERS)
-		.wrap("<li></li>");
+		.addClass("half")
+		.click(() => ime.zoomOut());		
+		
+	$("<li></li>")		
+		.append($btnZoomIn)
+		.append($btnZoomOut)
+		.appendTo(IME_TOOLS);
 }
 
 
