@@ -12,6 +12,8 @@ class ImageEditorController extends EventTarget{
 		this._canvas = canvas;
 		this._ctx = canvas.getContext("2d");		
 		this._image = new Image();		
+		
+		// image rendering configuration
 		this._imageConf = {
 			src:this._image,
 			sx:0, sy:0,
@@ -27,19 +29,26 @@ class ImageEditorController extends EventTarget{
 		};
 		
 		this._helpers = []; // multiple helpers can be active at once
-		this._tools = []; // only one tool can be active at the moment
+		this._tools = []; // only one tool can be active at once
 		this._activeTool = null;
 		
 		this._image.onload = (e) => {
-			this.dispatchEvent({type:"imageload"});
+			this.dispatchEvent(new Event("imageload"));
 			this.imageLoaded(e);
 		};																	
 	}
 	
+	/**
+	 * Factory method.
+	 */
 	static create(args) {
 		if (!args.canvas) throw "undefined parameter";
 		return new ImageEditorController(args.canvas);
 	}
+	
+	
+	/* Getters and Setters */
+	
 	
 	getCanvas() {
 		return this._canvas;
@@ -52,6 +61,14 @@ class ImageEditorController extends EventTarget{
 	getimageConf() {
 		return this._imageConf;
 	}	
+	
+	setImageSource(src) {
+		this._image.src = src;
+	}
+	
+	
+	/* Zoom handling */
+	
 	
 	setZoom(val) {
 		this._imageConf.zoom.ratio = val;
@@ -69,9 +86,9 @@ class ImageEditorController extends EventTarget{
 		this.setZoom(this._imageConf.zoom.ratio / this._imageConf.zoom.increment);		
 	}
 	
-	setImageSource(src) {
-		this._image.src = src;
-	}
+	
+	/* Tools handling */
+	
 	
 	addTool(tool) {
 		this._tools.push(tool);
@@ -81,20 +98,18 @@ class ImageEditorController extends EventTarget{
 		
 		// notify about tool override		
 		if (this._activeTool != null) {
-			this.dispatchEvent({type:"overridetool"});
+			this.dispatchEvent(new Event("overridetool"));
 		}
 				
 		// disable currently active tool if any		
 		if (this._activeTool != null) this.deactivateTool(this._activeTool);
 				
-		// activate selected tool
-		console.log("activating tool " + tool);
+		// activate selected tool		
 		this._activeTool = tool;
 		this._activeTool.activate();		
 	}
 	
-	deactivateTool(tool) {
-		console.log("deactivating tool" + tool);		
+	deactivateTool(tool) {				
 		if (this._activeTool == null) {
 			console.warn("No tool to deactivate!");
 		} else {
@@ -102,6 +117,9 @@ class ImageEditorController extends EventTarget{
 			this._activeTool = null;						
 		}
 	}
+	
+	
+	/* Helpers handling */
 	
 	addHelper(helper) {
 		this._helpers.push(helper);
@@ -115,44 +133,30 @@ class ImageEditorController extends EventTarget{
 		helper.deactivate();
 	}
 	
+	
 	/**
-	 * Event handlers.
-	 */	 	
-	imageLoaded(e) {
-		this.resetImage();
-		this.resetTool();		
-		this.draw();
-	}
-	
-	imageResized() {
-		this.resetTool();
-		this.draw();
-	}
-	
-	imageConfigModified() {
-		this._canvas.width = this._imageConf.dw * this._imageConf.zoom.ratio;
-		this._canvas.height = this._imageConf.dh * this._imageConf.zoom.ratio;
-		this.resetTool();
-		this.draw();
-	}
-	
-	// event handling method = method executed by event handler when event was fired
-	// in C# objname_eventname(sender, evargs)	implements eventhandler interface
-	// context changed imectx_Changed(e) / contextChanged()
-		
+	 * Resets the rendering configuration of the image.
+	 * Resets the tool and redraws the editor screen.
+	 */		
 	restore() {
 		this.resetImage();
 		this.resetTool();
-		this.draw();  // fire event restore  // catch event restore set callback ctxChanged
+		this.draw();
 	}
 	
+	/**
+	 * Deactivates and activates again the currently active tool.
+	 */	
 	resetTool() {
 		if (this._activeTool) {
 			this._activeTool.deactivate();
 			this._activeTool.activate();			
 		}
 	}
-		
+	
+	/**
+	 * Resets the rendering configuration of the image. 
+	 */		
 	resetImage() {
 		this._imageConf.zoom.ratio = 1.0;
 		this._imageConf.sx = 0;
@@ -200,8 +204,34 @@ class ImageEditorController extends EventTarget{
 			this._ctx.restore();
 		}
 	}
-
 	
+	/* Events handling */
+		 	
+	imageLoaded(e) {
+		this.resetImage();
+		this.resetTool();		
+		this.draw();
+	}
+	
+	imageResized() {
+		this.resetTool();
+		this.draw();
+	}
+	
+	imageConfigModified() {
+		
+		// readjust the editor screen (canvas)
+		this._canvas.width = this._imageConf.dw * this._imageConf.zoom.ratio;
+		this._canvas.height = this._imageConf.dh * this._imageConf.zoom.ratio;
+		
+		this.resetTool();
+		this.draw();
+	}
+	
+	// note
+	// event handling method = method executed by event handler when event was fired
+	// in C# objname_eventname(sender, evargs)	implements eventhandler interface
+	// context changed imectx_Changed(e) / contextChanged(e)	
 	
 }
 

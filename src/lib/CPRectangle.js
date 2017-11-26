@@ -1,5 +1,6 @@
 /**
- * Rectangle with control points.
+ * A rectangular selection with control point at each corner.
+ * A size and position of the selection is adjusted by the control points.
  *
  * @author Marek Mego
  * 
@@ -8,32 +9,12 @@
  * cp2 ------ cp3
  *
  */
-
+ 
 import { Point } from "./Point.js";
-
-class ControlPoint extends Point{
-	constructor(x, y){
-		super(x, y);		
-		this.moveFn;		
-		this._active = false;		
-	}	
-	
-	setActive(val) {
-		this._active = val;
-	}
-	
-	isActive() {
-		return this._active;
-	}
-	
-	move(x, y) {
-		this.moveFn(x, y);
-	}
-}
-
-
+import { ControlPoint } from "./ControlPoint.js";
+  
 class CPRectangle {
-	constructor() {
+	constructor() {		
 		this._position = new Point(0,0);
 		this._cpArray = [];		
 		this._cpSize = 10;		
@@ -41,10 +22,14 @@ class CPRectangle {
 		this._height = 0;
 		this._boundary = new Point(0,0);
 		
+		// init control points
 		this._initCp();				
 	}
 		
-	setWidth(val) {
+	/**
+	 * Sets the rectangle width, prevents a boundary overflow.
+	 */
+	setWidth(val) {		
 		if (this._validate(this._position.getX(), this._position.getY(), val, this._height)) {
 			this._cpArray[1].setX(this._position.getX() + val);
 			this._cpArray[3].setX(this._position.getX() + val);
@@ -52,6 +37,9 @@ class CPRectangle {
 		}
 	}
 	
+	/** 
+	 * Sets the rectangle height, prevents a boundary overflow.
+	 */
 	setHeight(val) {
 		if (this._validate(this._position.getX(), this._position.getY(), this._width, val)) {
 			this._cpArray[2].setY(this._position.getY() + val);
@@ -60,55 +48,43 @@ class CPRectangle {
 		}
 	}
 	
+	/**
+	 * Sets the position within the boundaries.
+	 */
 	setPosition(x, y) {
+		
+		// process X axis
 		if (this._validate(x, this._position.getY(), this._width, this._height)) {
 			var moveX = x - this._position.getX();
 			this._cpArray.forEach(function(element) {
 				element.setX(element.getX() + moveX);			
 			});
-			console.log('pos x: ' + x);
+			
 			this._position.setX(x);					
 		}
 		
+		// process Y axis
 		if (this._validate(this._position.getX(), y, this._width, this._height)) {
 			var moveY = y - this._position.getY();			
 			this._cpArray.forEach(function(element) {				
 				element.setY(element.getY() + moveY);
 			});		
-		
-			console.log('pos y: ' + y);
+			
 			this._position.setY(y);
 		}
 	}
 	
-	_validate(x, y, w, h) {
-		// negative values
-		if (x < 0 || y < 0) return false;
-		// width oversize
-		if (x + w > this._boundary.getX()) return false;
-		// height oversize
-		if (y + h > this._boundary.getY()) return false;
-		// ok
-		return true;
-	}
-	
-	_reset() {
-		this._position.setX(0);
-		this._position.setY(0);
-		this._width = 0;
-		this._height = 0;
-		this._cpArray.forEach((element) => {
-			element.setX(0);
-			element.setY(0);
-		});
-	}
-	
+	/**
+	 * Sets the boundaries and adjusts the rectangle size within the new boundaries.
+	 */		
 	setBoundary(x, y){		
 		this._reset();
 		this._boundary.setX(x);
 		this._boundary.setY(y);
 		this.justify();
 	}
+	
+	/* Getters */
 	
 	getWidth() {
 		return this._width;
@@ -137,6 +113,10 @@ class CPRectangle {
 			);
 	}
 	
+	/**
+	 * Looks up for a control point at given coordinates.
+	 * Returns a reference to the first control point at the position.
+	 */
 	inCpArea(x, y) {
 		var result = false;
 		console.log('x: ' + x + ' y: ' + y);
@@ -151,6 +131,9 @@ class CPRectangle {
 		return result;
 	}
 	
+	/**
+	 * Checks if the given coordinates lies within the rectangle.
+	 */	
 	inRectArea(x, y) {
 		if ((Math.abs(this.getCenter().getX() - x) < (this._width - this._cpSize) / 2)
 		&& (Math.abs(this.getCenter().getY() - y) < (this._height - this._cpSize) / 2)) {
@@ -159,11 +142,17 @@ class CPRectangle {
 		
 		return false;
 	}
-		
+	
+	/**
+	 * Moves the ractangle by the x, y parameters.
+	 */		
 	move(x, y) {		
 		this.setPosition(this._position.getX() + x, this._position.getY() + y);
 	}
 	
+	/**
+	 * Centers the rectangle within the boundaries.
+	 */
 	centerToBoundary() {
 		this.setPosition(
 			(this._boundary.getX() - this.getWidth()) / 2,
@@ -171,12 +160,46 @@ class CPRectangle {
 		);
 	}
 	
+	/**
+	 * Aligns the rectangle position and adjusts size within the boundaries.
+	 */
 	justify() {				
 		this.setWidth(this._boundary.getX() / 2);
 		this.setHeight(this._boundary.getY() / 2);
 		this.centerToBoundary();
 	}
 	
+	/**
+	 * Verifies valid rectangle position and dimensions within boundaries.
+	 */
+	_validate(x, y, w, h) {
+		// negative values
+		if (x < 0 || y < 0) return false;
+		// width oversize
+		if (x + w > this._boundary.getX()) return false;
+		// height oversize
+		if (y + h > this._boundary.getY()) return false;
+		// ok
+		return true;
+	}
+	
+	/**
+	 * Resets to initial values.
+	 */
+	_reset() {
+		this._position.setX(0);
+		this._position.setY(0);
+		this._width = 0;
+		this._height = 0;
+		this._cpArray.forEach((element) => {
+			element.setX(0);
+			element.setY(0);
+		});
+	}
+	
+	/**
+	 * Initializes the control points to rectangle's corners and configures move() methods.
+	 */	
 	_initCp() {		
 		var cp0 = new ControlPoint(0,0);
 		this._cpArray.push(cp0);
@@ -227,9 +250,16 @@ class CPRectangle {
 		}		
 	}
 	
+	/**
+	 * Draws the rectangle and the control points to the canvas.
+	 */	
 	draw(ctx) {
-		ctx.setLineDash([4, 2]);		
-		ctx.strokeStyle = "rgba(0, 0, 0, 0.6)";
+		ctx.shadowOffsetX = 1;
+		ctx.shadowOffsetY = 1;
+		ctx.shadowBlur = 1;
+		ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+		ctx.setLineDash([8, 8]);		
+		ctx.strokeStyle = "rgba(220, 220, 220, 0.9)";
 					
 		ctx.strokeRect(
 			this.getPosition().getX(),
@@ -242,7 +272,7 @@ class CPRectangle {
 					if (element.isActive()) { 
 						ctx.fillStyle = "rgba(255, 0, 0, 0.6)";
 					} else {
-						ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+						ctx.fillStyle = "rgba(200, 200, 200, 0.8)";
 					}
 					ctx.fillRect(
 					element.getX() - this._cpSize / 2,
@@ -255,6 +285,7 @@ class CPRectangle {
 		ctx.setLineDash([0, 0]);
 	}
 }
+
 
 export { CPRectangle };
 

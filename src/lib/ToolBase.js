@@ -13,10 +13,21 @@ class ToolBase extends EventTarget {
 		this._drawable = false;				
 	}		
 	
-	isActive() {return this._active;}
-	isDrawable() {return this._drawable;}	
-	drawOn() {this._drawable = true;}
-	drawOff() {this._drawable = false;}
+	isActive() {
+		return this._active;
+	}
+	
+	isDrawable() {
+		return this._drawable;
+	}	
+	
+	drawOn() {
+		this._drawable = true;
+	}
+	
+	drawOff() {
+		this._drawable = false;
+	}
 	
 	activate() {
 		if (this.isActive()) {

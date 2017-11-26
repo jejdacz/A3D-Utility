@@ -16,10 +16,15 @@ class Grid extends ToolBase{
 		this._style = "rgba(0, 0, 0, 0.75)";
 	}
 	
+	/**
+	 * Factory method.
+	 */
 	static create(args) {
 		if (!args.canvas || !args.rows || !args.cols) throw "undefined parameter";
 		return new Grid(args.canvas, args.rows, args.cols);
 	}
+	
+	/* Getters and Setters */
 					
 	getRows() {
 		return this._rows;
@@ -61,8 +66,8 @@ class Grid extends ToolBase{
 		return this;
 	}
 	
-	
-	
+		
+	/* Events */
 
 	onActivate() {						
 		this.drawOn();		
@@ -75,12 +80,9 @@ class Grid extends ToolBase{
 	}
 	
 	onChange() {
-		this.dispatchEvent({type:"change"});
+		this.dispatchEvent(new Event("change"));
 	}
-	
-	/**
-	 * Draws grid to canvas.
-	 */
+		
 	onDraw() {
 									
 		// read canvas size and compute grid offset
@@ -116,3 +118,4 @@ class Grid extends ToolBase{
 }
 
 export { Grid };
+

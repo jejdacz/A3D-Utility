@@ -17,24 +17,29 @@ class Meter extends ToolBase {
 		this._onMouseDownAction = (x, y) => this._start(x, y);
 		this._inProcess = false;
 		
-		// mousedown listener add/remove methods
+		// set mouse event listeners methods
 		var md = (e) => this.onMouseDown(e);  // must be the same instance for add and remove
 		this._disableMouseDown = function() {canvas.removeEventListener("mousedown", md)};
 		this._enableMouseDown = function() {canvas.addEventListener("mousedown", md)};
-		
-		// mousemove listener add/remove methods
+				
 		var mm = (e) => this.onMouseMove(e);
 		this._disableMouseMove = function() {canvas.removeEventListener("mousemove", mm)};
 		this._enableMouseMove = function() {canvas.addEventListener("mousemove", mm)};	
 	}
 	
+	 /**
+	  * Factory method.
+	  */
 	static create(args) {
 		if (!args.canvas) throw "undefined parameter";
 		return new Meter(args.canvas);
-	}	
+	}
 	
-	_start(x, y) {					
-		console.log("mtr start");
+	
+	/* Measuring process handling */
+	
+	// start measure at x, y
+	_start(x, y) {
 		this._inProcess = true;		
 		this._startPos.setX(x);
 		this._startPos.setY(y);
@@ -45,23 +50,24 @@ class Meter extends ToolBase {
 		this._onMouseDownAction = (x, y) => this._finish(x, y);		
 	}
 	
-	_finish(x, y) {
-		console.log("mtr finish");
+	// stop measure at x, y
+	_finish(x, y) {		
 		this.drawOff();				
 		this._onMouseDownAction = (x, y) => this._start(x, y);
 		this._disableMouseMove();		
 		this._inProcess = false;		
 	}
 	
-	onActivate() {
-		console.log("meter activate");				
+	
+	/* Events */
+	
+	onActivate() {						
 		this._enableMouseDown();
 		this.onChange();		
 	}
-	
-	// deactivated
+		
 	onDeactivate() {
-		console.log("meter deactivate");
+		
 		// handle tool deactivation while still in process
 		if (this._inProcess) {
 			this._finish(this._currentPos.getX(), this._currentPos.getY());
@@ -79,19 +85,15 @@ class Meter extends ToolBase {
 	
 	onMouseMove(e) {			
 		this._currentPos.setX(e.offsetX);
-		this._currentPos.setY(e.offsetY);
-		console.log(this._startPos.distance(this._currentPos));
-		console.log(this._currentPos.toString());
+		this._currentPos.setY(e.offsetY);		
 		this.onChange();
 	}
 	
-	onChange() {
-		console.log("mtr onchange");		
-		this.dispatchEvent({type:"change"});		
+	onChange() {				
+		this.dispatchEvent(new Event("change"));		
 	}
 		
-	onDraw() {
-		//TODO global drawing configuration
+	onDraw() {		
 		this._ctx.beginPath();
 		this._ctx.moveTo(this._startPos.getX(), this._startPos.getY());
 		this._ctx.lineTo(this._currentPos.getX(), this._currentPos.getY());
@@ -105,10 +107,8 @@ class Meter extends ToolBase {
 		this._ctx.stroke();
 		this._ctx.font = "16px Arial";
 		this._ctx.fillStyle = "rgba(255, 255, 0, 1.0)";
-		this._ctx.fillText(Math.round(this._startPos.distance(this._currentPos)) + " px", this._currentPos.getX(), this._currentPos.getY());
-		console.log("meter drawing");
-	}
-	
+		this._ctx.fillText(Math.round(this._startPos.distance(this._currentPos)) + " px", this._currentPos.getX(), this._currentPos.getY());		
+	}	
 }
 
 export { Meter };

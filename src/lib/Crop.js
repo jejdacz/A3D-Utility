@@ -1,6 +1,7 @@
 /**
  * Crop tool.
- * Modifies parameters for drawing image on canvas to simulate crop. 
+ * Crops the image to rectangular selection.
+ * Modifies rendering parameters to simulate cropping.
  *
  * @author Marek Mego
  */
@@ -19,7 +20,8 @@ class Crop extends ToolBase {
 		this._cursorPrevPos = new Point(0,0);
 		this._onMouseMoveAction;
 		
-		// mouse event listeners setup
+		/* Set mouse event listeners */
+		
 		var md = (e) => this.onMouseDown(e);
 		this._disableMouseDown = function() {canvas.removeEventListener("mousedown", md)};
 		this._enableMouseDown = function() {canvas.addEventListener("mousedown", md)};
@@ -32,20 +34,67 @@ class Crop extends ToolBase {
 		this._disableMouseMove = function() {canvas.removeEventListener("mousemove", mm)};
 		this._enableMouseMove = function() {canvas.addEventListener("mousemove", mm)};
 	}
-			
+	
+	/**
+	 * Factory method.
+	 */			
 	static create(args) {
 		if (!args.canvas || !args.imageConf) throw "undefined parameter";
 		return new Crop(args.canvas, args.imageConf);
 	}
 	
+	/**
+	 * Returns the width of selection.
+	 */
 	getWidth() {
 		return this._cpRect.getWidth();		
 	}
 	
+	/**
+	 * Returns the height of selection.
+	 */
 	getHeight() {
 		return this._cpRect.getHeight();		
 	}
+	
+	/**
+	 * Moves the control point.
+	 */
+	_cpMove(e) {
+		this._activeCp.move(e.offsetX, e.offsetY);
+	}
+	
+	/**
+	 * Moves the selection.
+	 */
+	_rectMove(e) {
+		var x = e.offsetX - this._cursorPrevPos.getX();
+		var y = e.offsetY - this._cursorPrevPos.getY();
+		this._cpRect.move(x, y);
+		this._cursorPrevPos.setX(e.offsetX);
+		this._cursorPrevPos.setY(e.offsetY);
+	}
+	
+	
+	/**
+	 * Crops to selection. 
+	 */
+	crop() {		
+		if (this.isActive()) {
+			this._imageConf.sx += this._cpRect.getPosition().getX() / this._imageConf.zoom.ratio;
+			this._imageConf.sy += this._cpRect.getPosition().getY() / this._imageConf.zoom.ratio;
+			this._imageConf.sw = this._cpRect.getWidth() / this._imageConf.zoom.ratio;
+			this._imageConf.sh = this._cpRect.getHeight() / this._imageConf.zoom.ratio;
+			this._imageConf.dw = this._cpRect.getWidth() / this._imageConf.zoom.ratio;
+			this._imageConf.dh = this._cpRect.getHeight() / this._imageConf.zoom.ratio;					
+			this.dispatchEvent(new Event("crop"));
+		} else {
+			console.warn("Crop tool isn't active!");
+		}
+	}
 		
+	/* Events	*/
+	
 	onActivate() {		
 		this._cpRect.setBoundary(this._canvas.width, this._canvas.height);		
 		this._enableMouseDown();
@@ -60,18 +109,6 @@ class Crop extends ToolBase {
 		this._disableMouseMove();
 		this.drawOff();		
 		this.onChange();	
-	}
-	
-	_cpMove(e) {
-		this._activeCp.move(e.offsetX, e.offsetY);
-	}
-	
-	_rectMove(e) {
-		var x = e.offsetX - this._cursorPrevPos.getX();
-		var y = e.offsetY - this._cursorPrevPos.getY();
-		this._cpRect.move(x, y);
-		this._cursorPrevPos.setX(e.offsetX);
-		this._cursorPrevPos.setY(e.offsetY);
 	}
 	
 	onMouseDown(e) {		
@@ -104,24 +141,11 @@ class Crop extends ToolBase {
 	onChange() {		
 		this.dispatchEvent(new Event("change"));
 	}
-	
-	crop() {		
-		if (this.isActive()) {
-			this._imageConf.sx += this._cpRect.getPosition().getX() / this._imageConf.zoom.ratio;
-			this._imageConf.sy += this._cpRect.getPosition().getY() / this._imageConf.zoom.ratio;
-			this._imageConf.sw = this._cpRect.getWidth() / this._imageConf.zoom.ratio;
-			this._imageConf.sh = this._cpRect.getHeight() / this._imageConf.zoom.ratio;
-			this._imageConf.dw = this._cpRect.getWidth() / this._imageConf.zoom.ratio;
-			this._imageConf.dh = this._cpRect.getHeight() / this._imageConf.zoom.ratio;					
-			this.dispatchEvent({type:"crop"});
-		} else {
-			console.warn("Crop tool isn't active!");
-		}
-	}										
-	
+		
 	onDraw() {
 			this._cpRect.draw(this._canvas.getContext("2d"));
-	}	
+	}
+	
 }
 
 export { Crop };

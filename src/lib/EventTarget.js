@@ -13,7 +13,7 @@ class EventTarget {
 		if (!(type in this.listeners)) {
 			this.listeners[type] = [];
 		}
-		console.log("add lis " + type);
+		
 		this.listeners[type].push(callback);
 	}
 	
@@ -25,8 +25,7 @@ class EventTarget {
 		var stack = this.listeners[type];
   		for (var i = 0, l = stack.length; i < l; i++) {
     		if (stack[i] === callback){
-      		stack.splice(i, 1);
-      		console.log("rem lis " + type);
+      		stack.splice(i, 1);      		
       		return;
     		}
   		}
