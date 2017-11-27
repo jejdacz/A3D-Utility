@@ -7,80 +7,127 @@
 import { ToolBase } from "./ToolBase.js";
 	
 class Grid extends ToolBase{
-	constructor(canvas, rows, cols) {
+
+	constructor(canvas, rows = 3, cols = 3) {
+	
 		super();
+		
+		if (isNaN(rows) || isNaN(cols)) {
+							
+			throw new Error("invalid argument, use a number");
+									
+		}
+		
 		this._canvas = canvas;
 		this._rows = rows;
 		this._cols = cols;
 		this._lineWidth = 2.0;						
 		this._style = "rgba(0, 0, 0, 0.75)";
+		
 	}
 	
 	/**
 	 * Factory method.
 	 */
 	static create(args) {
-		if (!args.canvas || !args.rows || !args.cols) throw "undefined parameter";
+	
+		if (!args.canvas || !args.rows || !args.cols) {
+			
+			throw new Error("missing argument");
+			
+		}
+		
 		return new Grid(args.canvas, args.rows, args.cols);
+		
 	}
 	
 	/* Getters and Setters */
 					
 	getRows() {
+	
 		return this._rows;
+		
 	}			
 
 	setRows(val) {
-		this._rows = val;				
+	
+		this._rows = val;
+						
 		this.onChange();
+		
 		return this;
+		
 	}
 	
 	getCols() {
+	
 		return this._cols;
+		
 	}
 
 	setCols(val) {
+	
 		this._cols = val;
+		
 		this.onChange();
+		
 		return this;
+		
 	}
 	
 	getStyle() {
+	
 		return this._style;
+		
 	}
 
 	setStyle(val) {
+	
 		this._style = val;
+		
 		this.onChange();
+		
 		return this;
+		
 	}
 	
 	getLineWidth() {
+	
 		return this._lineWidth;
+		
 	}
 
 	setLineWidth(val) {
+	
 		this._lineWidth = val;
+		
 		this.onChange();
+		
 		return this;
+		
 	}
 	
 		
 	/* Events */
 
-	onActivate() {						
+	onActivate() {	
+						
 		this.drawOn();		
-		this.onChange();				
+		this.onChange();
+						
 	}
 
-	onDeactivate() {		
+	onDeactivate() {
+			
 		this.drawOff();		
-		this.onChange();				
+		this.onChange();
+						
 	}
 	
 	onChange() {
+	
 		this.dispatchEvent(new Event("change"));
+		
 	}
 		
 	onDraw() {
@@ -99,22 +146,28 @@ class Grid extends ToolBase{
 		ctx.beginPath();
 
 		// set cols
-		for (var i = 1; i < this._cols; i++) {				
+		for (var i = 1; i < this._cols; i++) {
+						
 			ctx.moveTo(offsetX * i, 0);
 			ctx.lineTo(offsetX *i, this._canvas.height);
+			
 		}
 			
 		// set rows
-		for (var i = 1; i < this._rows; i++) {				
+		for (var i = 1; i < this._rows; i++) {
+						
 			ctx.moveTo(0, offsetY * i);
-			ctx.lineTo(this._canvas.width, offsetY * i);										
+			ctx.lineTo(this._canvas.width, offsetY * i);
+													
 		}
 		
 		ctx.closePath();
 
 		// draw to canvas								
 		ctx.stroke();
+		
 	}
+	
 }
 
 export { Grid };

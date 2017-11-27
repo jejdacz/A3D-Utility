@@ -9,41 +9,62 @@ class Point {
 	constructor(x, y) {
 		
 		if (isNaN(x) || isNaN(y)) {
-					
-			throw new Error("invalid arguments");
-						
-		} else {				
+							
+			throw new Error("invalid argument, use a number");
+									
+		}				
 			
-			this._x = x;
-			this._y = y;
-						
-		}
-		
+		this._x = x;
+		this._y = y;
+				
 	}
 	
-	setX(val) {	
+	setX(val) {
+		
+		if (isNaN(val)) {
+							
+			throw new Error("invalid argument, use a number");
+									
+		}
+				
 		this._x = val;
-		return this;		
+		
+		return this;
+				
 	}
 	
 	setY(val) {	
+		
+		if (isNaN(val)) {
+							
+			throw new Error("invalid argument, use a number");
+									
+		}
+		
 		this._y = val;
-		return this;		
+		
+		return this;
+				
 	}
 	
 	getX() {
+	
 		return this._x;
+				
 	}
 	
 	getY() {
+	
 		return this._y;
+				
 	}
 	
 	/**
 	 * Computes a distance between two points.
 	 * It is a variadic function. Accepts (Point) or (Number, Number).
 	 */	
-	distance() {		
+	distance() {
+			
 		if (arguments.length == 1 && (arguments[0] instanceof Point)) {
 			
 			return this._distance(arguments[0].getX(), arguments[0].getY());
@@ -54,18 +75,23 @@ class Point {
 			
 		} else {
 		
-			throw "invalid arguments";
+			throw new Error("invalid arguments");
 			
 		}
 	}
 	
 	_distance(x, y) {
+	
 		return Math.sqrt(Math.pow(x - this._x, 2) + Math.pow(y - this._y, 2));
+		
 	}
 	
 	toString() {
+	
 		return `[Object Point: x:${this._x}, y:${this._y}]`;
+		
 	}	
+	
 }
 
 export { Point };

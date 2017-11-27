@@ -4,10 +4,11 @@
  * Licensed under MIT (https://github.com/Lorti/webgl-3d-model-viewer-using-three.js/blob/master/LICENSE)
  */
 
-// SETUP filenames at line 69 and 79.
+// Customize 3D model and material filenames at line 69 and 79.
 						
 		if (!Detector.webgl) {
     	Detector.addGetWebGLMessage();
+    	$("#three-canvas-placeholder").text("WebGL 3D library is not supported by your system.");
     }
 
     var container;

@@ -5,16 +5,21 @@
  */
 
 import { EventTarget } from "./EventTarget.js";
+import { ToolBase } from "./ToolBase.js";
 			
 class ImageEditorController extends EventTarget{
+
 	constructor(canvas) {
+	
 		super();
+		
 		this._canvas = canvas;
 		this._ctx = canvas.getContext("2d");		
 		this._image = new Image();		
 		
 		// image rendering configuration
 		this._imageConf = {
+			
 			src:this._image,
 			sx:0, sy:0,
 			sw:this._image.width,
@@ -26,6 +31,7 @@ class ImageEditorController extends EventTarget{
 				ratio:1.0,
 				increment:1.25,
 				}
+				
 		};
 		
 		this._helpers = []; // multiple helpers can be active at once
@@ -33,17 +39,27 @@ class ImageEditorController extends EventTarget{
 		this._activeTool = null;
 		
 		this._image.onload = (e) => {
+		
 			this.dispatchEvent(new Event("imageload"));
 			this.imageLoaded(e);
-		};																	
+			
+		};
+																			
 	}
 	
 	/**
 	 * Factory method.
 	 */
 	static create(args) {
-		if (!args.canvas) throw "undefined parameter";
+	
+		if (!args.canvas) {
+		
+			throw new Error("missing argument");
+		
+		}
+				
 		return new ImageEditorController(args.canvas);
+		
 	}
 	
 	
@@ -51,19 +67,27 @@ class ImageEditorController extends EventTarget{
 	
 	
 	getCanvas() {
+	
 		return this._canvas;
+		
 	}
 	
 	getCtx() {
+	
 		return this._ctx;
+		
 	}
 	
 	getimageConf() {
+	
 		return this._imageConf;
+		
 	}	
 	
 	setImageSource(src) {
+	
 		this._image.src = src;
+		
 	}
 	
 	
@@ -71,19 +95,33 @@ class ImageEditorController extends EventTarget{
 	
 	
 	setZoom(val) {
+	
+		if (isNaN(val)) {
+							
+			throw new Error("invalid argument, use a number");
+									
+		}
+	
 		this._imageConf.zoom.ratio = val;
+		
 		this._canvas.width = this._imageConf.dw * this._imageConf.zoom.ratio;
-		this._canvas.height = this._imageConf.dh * this._imageConf.zoom.ratio;	
+		this._canvas.height = this._imageConf.dh * this._imageConf.zoom.ratio;
+			
 		this.resetTool();
 		this.draw();
+		
 	}
 	
 	zoomIn() {
-		this.setZoom(this._imageConf.zoom.ratio * this._imageConf.zoom.increment);		
+	
+		this.setZoom(this._imageConf.zoom.ratio * this._imageConf.zoom.increment);
+				
 	}
 	
 	zoomOut() {
-		this.setZoom(this._imageConf.zoom.ratio / this._imageConf.zoom.increment);		
+	
+		this.setZoom(this._imageConf.zoom.ratio / this._imageConf.zoom.increment);
+				
 	}
 	
 	
@@ -91,14 +129,30 @@ class ImageEditorController extends EventTarget{
 	
 	
 	addTool(tool) {
+	
+		if (!(tool instanceof ToolBase)) {
+							
+			throw new Error("invalid argument type, use a ToolBase");
+									
+		}
+		
 		this._tools.push(tool);
+		
 	}
 			
 	activateTool(tool) {
+	
+		if (!(tool instanceof ToolBase)) {
+							
+			throw new Error("invalid argument type, use a ToolBase");
+									
+		}
 		
 		// notify about tool override		
 		if (this._activeTool != null) {
+		
 			this.dispatchEvent(new Event("overridetool"));
+			
 		}
 				
 		// disable currently active tool if any		
@@ -106,31 +160,68 @@ class ImageEditorController extends EventTarget{
 				
 		// activate selected tool		
 		this._activeTool = tool;
-		this._activeTool.activate();		
+		this._activeTool.activate();
+				
 	}
 	
-	deactivateTool(tool) {				
-		if (this._activeTool == null) {
-			console.warn("No tool to deactivate!");
-		} else {
-			this._activeTool.deactivate();
-			this._activeTool = null;						
+	deactivateTool(tool) {
+		
+		if (!(tool instanceof ToolBase)) {
+							
+			throw new Error("invalid argument type, use a ToolBase");
+									
 		}
+					
+		if (this._activeTool == null) {
+		
+			console.warn("No tool to deactivate!");
+			
+		} else {
+		
+			this._activeTool.deactivate();
+			this._activeTool = null;
+									
+		}
+		
 	}
 	
 	
 	/* Helpers handling */
 	
-	addHelper(helper) {
-		this._helpers.push(helper);
+	addHelper(tool) {
+	
+		if (!(tool instanceof ToolBase)) {
+							
+			throw new Error("invalid argument type, use a ToolBase");
+									
+		}
+		
+		this._helpers.push(tool);
+		
 	}
 	
-	activateHelper(helper) {
-		helper.activate();
+	activateHelper(tool) {
+	
+		if (!(tool instanceof ToolBase)) {
+							
+			throw new Error("invalid argument type, use a ToolBase");
+									
+		}
+		
+		tool.activate();
+		
 	}
 	
-	deactivateHelper(helper) {
-		helper.deactivate();
+	deactivateHelper(tool) {
+	
+		if (!(tool instanceof ToolBase)) {
+							
+			throw new Error("invalid argument type, use a ToolBase");
+									
+		}
+		
+		tool.deactivate();
+		
 	}
 	
 	
@@ -139,25 +230,32 @@ class ImageEditorController extends EventTarget{
 	 * Resets the tool and redraws the editor screen.
 	 */		
 	restore() {
+	
 		this.resetImage();
 		this.resetTool();
 		this.draw();
+		
 	}
 	
 	/**
 	 * Deactivates and activates again the currently active tool.
 	 */	
 	resetTool() {
+	
 		if (this._activeTool) {
+		
 			this._activeTool.deactivate();
-			this._activeTool.activate();			
+			this._activeTool.activate();
+						
 		}
+		
 	}
 	
 	/**
 	 * Resets the rendering configuration of the image. 
 	 */		
 	resetImage() {
+	
 		this._imageConf.zoom.ratio = 1.0;
 		this._imageConf.sx = 0;
 		this._imageConf.sy = 0;				
@@ -167,14 +265,17 @@ class ImageEditorController extends EventTarget{
 		this._imageConf.dy = 0;
 		this._imageConf.dw = this._image.width;
 		this._imageConf.dh = this._image.height;
+		
 		this._canvas.width = this._image.width;
 		this._canvas.height = this._image.height;
+		
 	}
 		
 	/**
 	 * Draws objects on canvas.
 	 */
-	draw() {	  				  			
+	draw() {
+		  				  			
 		// clear canvas
 		this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
 		
@@ -192,30 +293,39 @@ class ImageEditorController extends EventTarget{
 												
 		// draw helpers
 		for (var i = 0, l = this._helpers.length; i < l; i++) {
+		
 			this._ctx.save();
 			this._helpers[i].draw();
 			this._ctx.restore();
+			
 		}
 		
 		// draw active tool
 		if (this._activeTool != null) {
+		
 			this._ctx.save();
 			this._activeTool.draw();
 			this._ctx.restore();
+			
 		}
+		
 	}
 	
 	/* Events handling */
 		 	
 	imageLoaded(e) {
+	
 		this.resetImage();
 		this.resetTool();		
 		this.draw();
+		
 	}
 	
 	imageResized() {
+	
 		this.resetTool();
 		this.draw();
+		
 	}
 	
 	imageConfigModified() {
@@ -226,6 +336,7 @@ class ImageEditorController extends EventTarget{
 		
 		this.resetTool();
 		this.draw();
+		
 	}
 	
 	// note
