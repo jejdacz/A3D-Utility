@@ -11,16 +11,64 @@
     	$("#three-canvas-placeholder").text("WebGL 3D library is not supported by your system.");
     }
 
+    
+    const THREE_OPENFILE = "#three-openfile";
+    const THREE_INPUTFILE = "#inputfile-three";    
+    
     var container;
+    
+    var objectFileName;
+    var materialFileName;
+    
+    var basePath = "/3dviewer/assets/";
 
     var camera, controls, scene, renderer;
     var lighting, ambient, keyLight, fillLight, backLight;
 
     var windowHalfX;
     var windowHalfY;
+    
+    var mtlLoader = new THREE.MTLLoader();
+    var objLoader = new THREE.OBJLoader();
 
     
-    $(function(){
+    function init3dviewer() {			
+				
+			$(THREE_OPENFILE)
+						
+				.submit(function(e) {
+						
+						e.preventDefault();
+						
+					})										
+				.change(function(e) {
+					
+					var fileList = $(THREE_INPUTFILE)[0].files;
+					
+					for ( var i = 0; i < fileList.length; i++ ) {
+					
+						var fileName = fileList[i].name;
+						var extension = fileName.split('.').pop().toLowerCase();
+						
+						switch (extension) {
+							
+							case "obj":
+								objectFileName = fileName;
+								break;
+								
+							case "mtl":
+								materialFileName = fileName;
+								break;
+						}
+					
+					}
+					
+					loadModel();
+					//init();
+  				animate();
+								
+				});
+					
     	
     	// resize view on window resize
     	$(window).resize(function(){
@@ -34,9 +82,9 @@
    		windowHalfY = container.top + container.offsetHeight / 2;
 			
 			init();
-  		animate();
+  		//animate();
   
-		});
+		}
 
     function init() {
 
@@ -62,29 +110,7 @@
         backLight = new THREE.DirectionalLight(0xffffff, 1.0);
         backLight.position.set(100, 0, -100).normalize();
 
-        /* Model */
-
-        var mtlLoader = new THREE.MTLLoader();
-        mtlLoader.setBaseUrl('/3dviewer/assets/');            
-        mtlLoader.setPath('/3dviewer/assets/');
-        mtlLoader.load('female-croupier-2013-03-26.mtl', function (materials) {
-
-            materials.preload();
-
-            materials.materials.default.map.magFilter = THREE.NearestFilter;
-            materials.materials.default.map.minFilter = THREE.LinearFilter;
-
-            var objLoader = new THREE.OBJLoader();
-            objLoader.setMaterials(materials);
-            objLoader.setPath('/3dviewer/assets/');                
-            objLoader.load('female-croupier-2013-03-26.obj', function (object) {
-            
-
-                scene.add(object);
-
-            });
-
-        });
+        if (objectFileName && materialFileName) loadModel();
 
         /* Renderer */
 
@@ -107,6 +133,34 @@
         window.addEventListener('resize', onWindowResize, false);
         window.addEventListener('keydown', onKeyboardEvent, false);
 
+    }
+    
+    function loadModel() {
+    		
+    		/* Model */
+
+        //var mtlLoader = new THREE.MTLLoader();
+        mtlLoader.setBaseUrl(basePath);            
+        mtlLoader.setPath(basePath);
+        mtlLoader.load(materialFileName, function (materials) {
+
+            materials.preload();
+
+            materials.materials.default.map.magFilter = THREE.NearestFilter;
+            materials.materials.default.map.minFilter = THREE.LinearFilter;
+
+            //var objLoader = new THREE.OBJLoader();            
+            objLoader.setMaterials(materials);
+            objLoader.setPath(basePath);                
+            objLoader.load(objectFileName, function (object) {
+            
+
+                scene.add(object);
+
+            });
+
+        });		
+    		
     }
 
     function onWindowResize() {

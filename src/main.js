@@ -114,6 +114,7 @@ $(function(){
 	initTools();	
 	initOpenImageFile();
 	initGUI();
+	window.init3dviewer();	
 		
 });
 
@@ -126,8 +127,8 @@ function initForms() {
 	// append file open forms to the page
 	$(IME_TOOLS).append(
 		"<form id=\"three-openfile\">" +																		
-			"<input id=\"inputfile-three\" class=\"input-sm\" type=\"file\" accept=\".obj\" required=\"required\">" +
-		"</form>" +
+			"<input id=\"inputfile-three\" class=\"input-sm\" type=\"file\" required=\"required\" multiple>" +
+		"</form>"+		
 		"<form id=\"ime-openfile\">" +																				
 			"<input id=\"inputfile-image\" class=\"input-sm\" type=\"file\" accept=\"image/*\" required=\"required\" >" +
 		"</form>"
@@ -140,8 +141,8 @@ function initForms() {
 				$("#inputfile-three").trigger("click");
 			})
 		.appendTo(IME_TOOLS)		 
-		.wrap("<li></li>")
-		.prop("disabled", true);
+		.wrap("<li></li>");
+		
 	
 	// create the Snapshot button	
 	$(FORM_BUTTON)
