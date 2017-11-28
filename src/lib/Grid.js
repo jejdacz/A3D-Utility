@@ -31,7 +31,7 @@ class Grid extends ToolBase{
 	 */
 	static create(args) {
 	
-		if (!args.canvas || !args.rows || !args.cols) {
+		if (args.canvas === undefined || args.rows === undefined || args.cols === undefined) {
 			
 			throw new Error("missing argument");
 			

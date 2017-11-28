@@ -38,7 +38,7 @@ class Meter extends ToolBase {
 	  */
 	static create(args) {
 	
-		if (!args.canvas) {
+		if (args.canvas === undefined) {
 		
 			throw new Error("missing argument");
 		

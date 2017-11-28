@@ -47,7 +47,7 @@ class Crop extends ToolBase {
 	 */			
 	static create(args) {
 	
-		if (!args.canvas || !args.imageConf) {
+		if (args.canvas === undefined || args.imageConf === undefined) {
 		
 			throw new Error("missing argument");
 			
