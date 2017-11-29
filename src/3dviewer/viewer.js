@@ -1,116 +1,175 @@
-/*!
+/* Modified version of:
+ *
  * WebGL 3D Model Viewer Using three.js (https://github.com/Lorti/webgl-3d-model-viewer-using-three.js)
  * Copyright (c) 2016 Manuel Wieser
  * Licensed under MIT (https://github.com/Lorti/webgl-3d-model-viewer-using-three.js/blob/master/LICENSE)
- */
-
-// Customize 3D model and material filenames at line 69 and 79.
-						
-		if (!Detector.webgl) {
-    	Detector.addGetWebGLMessage();
-    	$("#three-canvas-placeholder").text("WebGL 3D library is not supported by your system.");
-    }
-
-    
+ */						
+		    
     const THREE_OPENFILE = "#three-openfile";
-    const THREE_INPUTFILE = "#inputfile-three";    
+    const THREE_INPUTFILE = "#inputfile-three";
+    const THREE_PLACEHOLDER = "#three-canvas-placeholder";     
     
     var container;
     
-    var objectFileName;
-    var materialFileName;
-    
-    var basePath = "/3dviewer/assets/";
-
     var camera, controls, scene, renderer;
     var lighting, ambient, keyLight, fillLight, backLight;
 
     var windowHalfX;
     var windowHalfY;
     
-    var mtlLoader = new THREE.MTLLoader();
-    var objLoader = new THREE.OBJLoader();
+    var objFile;
+     
 
+    function init3dviewer() {
     
-    function init3dviewer() {			
+    		if (!Detector.webgl) {
+					Detector.addGetWebGLMessage();
+					$(THREE_PLACEHOLDER).text("WebGL 3D library is not supported by your system.");
+				}			
 				
-			$(THREE_OPENFILE)
+				// resize view on window resize
+				$(window).resize(function(){
+					$(THREE_PLACEHOLDER).height(window.innerHeight * 0.9);
+				});
+
+				$(THREE_PLACEHOLDER).height(window.innerHeight * 0.9);
+				
+    
+    		var reader = new FileReader();
+    		
+    		$(THREE_OPENFILE)
 						
 				.submit(function(e) {
 						
 						e.preventDefault();
 						
-					})										
+					})
+															
 				.change(function(e) {
-					
-					var fileList = $(THREE_INPUTFILE)[0].files;
-					
-					for ( var i = 0; i < fileList.length; i++ ) {
-					
-						var fileName = fileList[i].name;
-						var extension = fileName.split('.').pop().toLowerCase();
+											
+					reader.onload = function(){
 						
-						switch (extension) {
-							
-							case "obj":
-								objectFileName = fileName;
-								break;
-								
-							case "mtl":
-								materialFileName = fileName;
-								break;
-						}
-					
+						$(THREE_PLACEHOLDER).empty();
+						
+						objFile = reader.result;
+						
+						init();
+						animate();
+						
+						$(THREE_OPENFILE)[0].reset();						
+						
 					}
 					
-					loadModel();
-					//init();
-  				animate();
+					reader.readAsText($(THREE_INPUTFILE)[0].files[0]);
 								
 				});
-					
-    	
-    	// resize view on window resize
-    	$(window).resize(function(){
-				$("#three-canvas-placeholder").height(window.innerHeight * 0.9);
-			});
-	
-			$("#three-canvas-placeholder").height(window.innerHeight * 0.9);
-    	
-			container = document.getElementById("three-canvas-placeholder");
-			windowHalfX = container.left + container.offsetWidth / 2;
-   		windowHalfY = container.top + container.offsetHeight / 2;
-			
-			init();
-  		//animate();
-  
-		}
+				
+				container = $(THREE_PLACEHOLDER)[0];
+				windowHalfX = container.left + container.offsetWidth / 2;
+		 		windowHalfY = container.top + container.offsetHeight / 2;
+    		
+		 }
+		 		
+		 	function init() {
 
-    function init() {
+        camera = new THREE.PerspectiveCamera( 15, container.offsetWidth / container.offsetHeight, 1, 2000 );
+				camera.position.z = 1000;
+				camera.position.y = 100;
+				
+				
+				ambient = new THREE.AmbientLight(0xffffff, 0.4);        
+				
+				keyLight = new THREE.DirectionalLight(new THREE.Color('hsl(30, 30%, 75%)'), 0.9);
+        keyLight.position.set(-500, 100, 100);
 
-        /* Camera */
+        fillLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 50%, 75%)'), 0.45);
+        fillLight.position.set(500, 0, 100);
 
-        camera = new THREE.PerspectiveCamera(15, container.offsetWidth / container.offsetHeight, 1, 1000);
-        camera.position.z = 10;
+        backLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        backLight.position.set(500, 100, -500).normalize();
+        
+        
+        //keyLight.castShadow = true;
+				//keyLight.shadow.mapSize.width = 2048;
+				//keyLight.shadow.mapSize.height = 2048;
+        
 
-        /* Scene */
+				scene = new THREE.Scene();
+				
+				scene.add( ambient );
+				scene.add( keyLight );
+				scene.add( fillLight );
+				scene.add( backLight );
+				
+				//scene.add( hemiLight );
+				//scene.add( dirLight );					
+				scene.add( camera );
+						
 
-        scene = new THREE.Scene();
-        lighting = false;
+        
+        var manager = new THREE.LoadingManager();
+				manager.onProgress = function ( item, loaded, total ) {
 
-        ambient = new THREE.AmbientLight(0xffffff, 1.0);
-        scene.add(ambient);
+					console.log( item, loaded, total );
 
-        keyLight = new THREE.DirectionalLight(new THREE.Color('hsl(30, 100%, 75%)'), 1.0);
-        keyLight.position.set(-100, 0, 100);
+				};
 
-        fillLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 100%, 75%)'), 0.75);
-        fillLight.position.set(100, 0, 100);
+				var textureLoader = new THREE.TextureLoader( manager );
+				var texture = textureLoader.load( '/3dviewer/obj/marble.jpg' );
+    		
+    		var onProgress = function ( xhr ) {
+					if ( xhr.lengthComputable ) {
+						var percentComplete = xhr.loaded / xhr.total * 100;
+						console.log( Math.round(percentComplete, 2) + '% downloaded' );
+					}
+				};
+    		
+    		var onError = function ( xhr ) {
+				};
 
-        backLight = new THREE.DirectionalLight(0xffffff, 1.0);
-        backLight.position.set(100, 0, -100).normalize();
+        //var mat = new THREE.MeshLambertMaterial( { color: 0xbbaaaa, overdraw: 0.9 } );
+        var mat = new THREE.MeshStandardMaterial( { color: 0xf3eedd, roughness: 0.08, metalness: 0.05 } );
+        //mat.map = texture;
+        
+        var object = new THREE.OBJLoader().parse( objFile );
+				
+							object.traverse( function ( child ) {
 
-        if (objectFileName && materialFileName) loadModel();
+								if ( child instanceof THREE.Mesh ) {
+
+									child.material = mat;									
+									//child.recieveShadow = true;
+									
+									child.material.map = texture;
+
+								}
+								
+												
+							scene.add( object );
+
+						}, onProgress, onError );
+
+				
+				/*
+				
+				var loader = new THREE.OBJLoader( manager );
+				loader.load( '/3dviewer/obj/male02.obj', function ( object ) {
+
+					object.traverse( function ( child ) {
+
+						if ( child instanceof THREE.Mesh ) {
+
+							child.material = mat;
+
+						}
+
+					} );
+
+					object.position.y = - 95;
+					scene.add( object );
+
+				}, onProgress, onError );*/
+				
 
         /* Renderer */
 
@@ -135,33 +194,7 @@
 
     }
     
-    function loadModel() {
-    		
-    		/* Model */
-
-        //var mtlLoader = new THREE.MTLLoader();
-        mtlLoader.setBaseUrl(basePath);            
-        mtlLoader.setPath(basePath);
-        mtlLoader.load(materialFileName, function (materials) {
-
-            materials.preload();
-
-            materials.materials.default.map.magFilter = THREE.NearestFilter;
-            materials.materials.default.map.minFilter = THREE.LinearFilter;
-
-            //var objLoader = new THREE.OBJLoader();            
-            objLoader.setMaterials(materials);
-            objLoader.setPath(basePath);                
-            objLoader.load(objectFileName, function (object) {
-            
-
-                scene.add(object);
-
-            });
-
-        });		
-    		
-    }
+    
 
     function onWindowResize() {
 
@@ -183,17 +216,17 @@
 
             if (lighting) {
 
-                ambient.intensity = 0.25;
-                scene.add(keyLight);
-                scene.add(fillLight);
-                scene.add(backLight);
+                ambient.intensity = 0.4;
+                //scene.add(keyLight);
+                //scene.add(fillLight);
+                //scene.add(backLight);
 
             } else {
 
                 ambient.intensity = 1.0;
-                scene.remove(keyLight);
-                scene.remove(fillLight);
-                scene.remove(backLight);
+                //scene.remove(keyLight);
+                //scene.remove(fillLight);
+                //scene.remove(backLight);
 
             }
 

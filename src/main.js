@@ -108,13 +108,14 @@ const	gui = GUIController.create();
 /**
  * On document ready init the application.
  */ 
-$(function(){
-		
+$(function(){		
+	
 	initForms();
 	initTools();	
 	initOpenImageFile();
 	initGUI();
-	window.init3dviewer();	// 3dfilebranch
+	window.init3dviewer();	// 3dfilebranch	
+	
 		
 });
 
