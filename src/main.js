@@ -114,7 +114,7 @@ $(function(){
 	initTools();	
 	initOpenImageFile();
 	initGUI();
-	window.init3dviewer();	
+	window.init3dviewer();	// 3dfilebranch
 		
 });
 
