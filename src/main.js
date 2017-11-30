@@ -77,13 +77,13 @@
  * - init file open forms
  */
 
-import { ImageEditorController } from "./lib/ImageEditorController.js";
-import { GUIController } from "./lib/GUIController.js";
-import { Grid } from "./lib/Grid.js";
-import { Meter } from "./lib/Meter.js";
-import { Crop } from "./lib/Crop.js";
-import { NullTool } from "./lib/NullTool.js";
-import { Point } from "./lib/Point.js";
+import { ImageEditorController } from "./js/ImageEditorController.js";
+import { GUIController } from "./js/GUIController.js";
+import { Grid } from "./js/Grid.js";
+import { Meter } from "./js/Meter.js";
+import { Crop } from "./js/Crop.js";
+import { NullTool } from "./js/NullTool.js";
+import { Point } from "./js/Point.js";
 
 
 /**
@@ -100,11 +100,13 @@ const TOOL_SETTINGS = "<li id=\"target\" class=\"settings collapse\"></li>";
  */
 var $error;
 var $tools;
+var $btn3d;
 const $canvas = $("<canvas width=\"0\" height=\"0\">text: \"Your browser does not support the HTML5 canvas tag.</canvas>");
 
+// TODO: put all controls, containers and GUI elements to GUIController container to unify access
 
 /**
- * Create controllers
+ * Controllers
  */
 var	ime;
 var	gui;
@@ -150,12 +152,13 @@ function initForms() {
 	);			
 	
 	// create the Open 3d button - disabled, feature not implemented
-	$(FORM_BUTTON)
+	$btn3d = $(FORM_BUTTON)
 		.text("Open 3D")
 		.click(function(){
 				$("#inputfile-three").trigger("click");
 			})
-		.appendTo($tools)		 
+		.appendTo($tools)
+		.prop("disabled", true)		 
 		.wrap("<li></li>");		
 	
 	// create the Snapshot button	
@@ -561,18 +564,17 @@ function initGUI() {
  * 3D VIEWER
  *
  */
-
+ 
 var camera, controls, scene, renderer;
 var lighting, ambient, keyLight, fillLight, backLight;
 
-var objFile;
-				
+var objFile; 
 
 function init3dviewer() {
 		
 		
 		const THREE = window.THREE;
-		
+				
 		var container;
 		
 		var windowHalfX;
@@ -584,14 +586,16 @@ function init3dviewer() {
 				
 		// check WEBGL support
 		if ( ! Detector.webgl) {
-			Detector.addGetWebGLMessage( { parent: $error[0] } );					
+			Detector.addGetWebGLMessage( { parent: $error[0] } );
+			$btn3d.prop("disabled", true);					
 			return;				
-		}				
+		}
+		
+		$btn3d.prop("disabled", false);				
 
 		var reader = new FileReader();
 		
-		$form
-				
+		$form				
 		.submit(function(e) {
 				
 				e.preventDefault();
@@ -642,12 +646,13 @@ function init3dviewer() {
 	 		container = $threePlaceholder[0];
 			windowHalfX = container.left + container.offsetWidth / 2;
 	 		windowHalfY = container.top + container.offsetHeight / 2;
-
+			
+			/* Camera */
 		  camera = new THREE.PerspectiveCamera( 15, container.offsetWidth / container.offsetHeight, 1, 2000 );
 			camera.position.z = 1000;
 			camera.position.y = 100;
 		
-		
+			/* Lights */
 			ambient = new THREE.AmbientLight(0xffffff, 0.3);       
 		
 			keyLight = new THREE.DirectionalLight(new THREE.Color('hsl(30, 30%, 75%)'), 0.9);
@@ -659,7 +664,7 @@ function init3dviewer() {
 		  backLight = new THREE.DirectionalLight(0xffffff, 0.5);
 		  backLight.position.set(200, 200, -200).normalize();
 		    
-
+			/* Scene */
 			scene = new THREE.Scene();
 		
 			scene.add( ambient );
