@@ -18,6 +18,13 @@
  * Copyright (c) 2016 Manuel Wieser
  * Licensed under MIT (https://github.com/Lorti/webgl-3d-model-viewer-using-three.js/blob/master/LICENSE) 
  *
+ *
+ * Base for 3D viewer
+ * JavaScript 3D library (https://github.com/mrdoob/three.js)
+ * Copyright © 2010-2016 three.js authors
+ * Licensed under MIT (https://github.com/mrdoob/three.js/blob/master/LICENSE)
+ *
+ *
  * Base for main page design
  * Start Bootstrap - Simple Sidebar (https://startbootstrap.com/template-overviews/simple-sidebar)
  * Copyright 2013-2017 Start Bootstrap
@@ -33,9 +40,8 @@
  * 			python -m http.server
  *
  * 	3dviewer:
- * 		Place 3d files to /3dviewer/assets/		 
- * 		Supported formats are .obj for 3d object and .mat for material. And Image files for textures.
- * 		Names of files have to be set in /3dviewer/viewer.js.
+ * 		supported file format of 3d object is .obj
+ *		
  *		On the page viewer's screen fills the rest of the browser's window next to the side bar.
  *		Use mouse to control rotation/zoom/pan. Screen is adjusted when the window is resized.
  *		
@@ -554,37 +560,28 @@ function initGUI() {
  *
  * 3D VIEWER
  *
- * Modified version of:
- *
- * WebGL 3D Model Viewer Using three.js (https://github.com/Lorti/webgl-3d-model-viewer-using-three.js)
- * Copyright (c) 2016 Manuel Wieser
- * Licensed under MIT (https://github.com/Lorti/webgl-3d-model-viewer-using-three.js/blob/master/LICENSE)
  */
- 
-const THREE = window.THREE;
-
-var $threeOpenFile;
-var $threeInputFile;
-var $threePlaceholder;     
-
-var container;
 
 var camera, controls, scene, renderer;
 var lighting, ambient, keyLight, fillLight, backLight;
-
-var windowHalfX;
-var windowHalfY;
 
 var objFile;
 				
 
 function init3dviewer() {
 		
-		$threeOpenFile = $("#three-openfile");
-		$threeInputFile = $("#inputfile-three");
-		$threePlaceholder = $("#three-canvas-placeholder");
 		
+		const THREE = window.THREE;
 		
+		var container;
+		
+		var windowHalfX;
+		var windowHalfY;		
+		
+		var $form = $("#three-openfile");
+		var $threeInputFile = $("#inputfile-three");
+		var $threePlaceholder = $("#three-canvas-placeholder");
+				
 		// check WEBGL support
 		if ( ! Detector.webgl) {
 			Detector.addGetWebGLMessage( { parent: $error[0] } );					
@@ -593,7 +590,7 @@ function init3dviewer() {
 
 		var reader = new FileReader();
 		
-		$threeOpenFile
+		$form
 				
 		.submit(function(e) {
 				
@@ -613,7 +610,7 @@ function init3dviewer() {
 				animate();
 				
 				// clear information about file from the form
-				$threeOpenFile[0].reset();						
+				$form[0].reset();						
 				
 			}
 			
@@ -629,7 +626,7 @@ function init3dviewer() {
 			$error.text("3d viewer: can't load the file");
 		
 			// clear information about file from the form
-			$threeOpenFile[0].reset();
+			$form[0].reset();
 		}	
 			
  		
@@ -651,16 +648,16 @@ function init3dviewer() {
 			camera.position.y = 100;
 		
 		
-			ambient = new THREE.AmbientLight(0xffffff, 0.4);        
+			ambient = new THREE.AmbientLight(0xffffff, 0.3);       
 		
 			keyLight = new THREE.DirectionalLight(new THREE.Color('hsl(30, 30%, 75%)'), 0.9);
-		  keyLight.position.set(-500, 100, 100);
+		  keyLight.position.set(-200, 200, 200);
 
-		  fillLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 50%, 75%)'), 0.45);
-		  fillLight.position.set(500, 0, 100);
+		  fillLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 50%, 75%)'), 0.4);
+		  fillLight.position.set(400, 0, 0);
 
 		  backLight = new THREE.DirectionalLight(0xffffff, 0.5);
-		  backLight.position.set(500, 100, -500).normalize();
+		  backLight.position.set(200, 200, -200).normalize();
 		    
 
 			scene = new THREE.Scene();
@@ -696,6 +693,7 @@ function init3dviewer() {
 
 						});
 					
+			object.position.y = -90;
 			scene.add( object );
 		
 
