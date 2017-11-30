@@ -7,10 +7,10 @@
 		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 		<link rel="stylesheet" href="/bootstrap/bootstrap.min.css" />
 		<link rel="stylesheet" href="/bootstrap/bootstrap-theme.min.css" />
-		<link rel="stylesheet" href="/static/simple-sidebar.css">
-		<link rel="stylesheet" href="/static/styles.css" />
+		<link rel="stylesheet" href="/css/simple-sidebar.css">
+		<link rel="stylesheet" href="/css/styles.css" />
 				
-		<script src="/lib/jquery.min.js"></script>
+		<script src="/jquery/jquery.min.js"></script>
 		<script src="/bootstrap/bootstrap.min.js"></script>
 		<script src="/bootstrap/bootstrap.bundle.min.js"></script>
 		
@@ -18,8 +18,7 @@
 		<script src="/3dviewer/Detector.js"></script>
 		<script src="/3dviewer/OrbitControls.js"></script>
 		<script src="/3dviewer/OBJLoader.js"></script>		
-		<script src="/3dviewer/viewer.js"></script>
-				
+						
 		<script type="module" src="main.js"></script>
 		
 		<title>A3D Utility</title>
@@ -41,9 +40,13 @@
         <!-- /#sidebar-wrapper -->
 
         <!-- Page Content -->
-        <div id="page-content-wrapper">        		
+        <div id="page-content-wrapper">            	        		
        			<div class="container-fluid">            	
             	<div id="three-canvas-placeholder"></div>   
+            </div>
+            
+            <div class="container-fluid">            	
+            	<div id="error-placeholder"></div>   
             </div>
             
             <div class="container-fluid">                

@@ -13,7 +13,7 @@
  *
  * Copyrights of the parts used in this utility:
  *
- * 3D viewer feature + example 3d model
+ * Base for 3D viewer
  * WebGL 3D Model Viewer Using three.js (https://github.com/Lorti/webgl-3d-model-viewer-using-three.js)
  * Copyright (c) 2016 Manuel Wieser
  * Licensed under MIT (https://github.com/Lorti/webgl-3d-model-viewer-using-three.js/blob/master/LICENSE) 
@@ -64,13 +64,12 @@
  *			Resizes the image.
  *
  *
- * This script handles:
- * - init of constants, variables and html page elements
- * - init of image editor
- * - image file opening
+ * This script does:
+ * - init constants, variables and DOM elements
+ * - init image editor 
+ * - init 3d viewer
+ * - init file open forms
  */
-
-//TODO openfile feature for 3d viewer
 
 import { ImageEditorController } from "./lib/ImageEditorController.js";
 import { GUIController } from "./lib/GUIController.js";
@@ -79,13 +78,6 @@ import { Meter } from "./lib/Meter.js";
 import { Crop } from "./lib/Crop.js";
 import { NullTool } from "./lib/NullTool.js";
 import { Point } from "./lib/Point.js";
-
-
-/**
- * Elements' IDs
- */
-const IME_TOOLS = "#ime-tools";
-const IME_OPENFILE = "#ime-openfile";
 
 
 /**
@@ -98,25 +90,41 @@ const TOOL_SETTINGS = "<li id=\"target\" class=\"settings collapse\"></li>";
 
 
 /**
- * Create controllers
+ * DOM Elements
  */
-const $CANVAS = $("<canvas width=\"0\" height=\"0\">text: \"Your browser does not support the HTML5 canvas tag.</canvas>");
-const	ime = ImageEditorController.create({ canvas:$CANVAS[0] });
-const	gui = GUIController.create();
+var $error;
+var $tools;
+const $canvas = $("<canvas width=\"0\" height=\"0\">text: \"Your browser does not support the HTML5 canvas tag.</canvas>");
 
 
 /**
- * On document ready init the application.
+ * Create controllers
+ */
+var	ime;
+var	gui;
+
+
+/**
+ *
+ * On document ready.
+ *
+ * Init the application.
+ *
  */ 
-$(function(){		
+$(function(){
+	
+	$error = $("#error-placeholder");
+	$tools = $("#ime-tools");
+	
+	ime = ImageEditorController.create({ canvas:$canvas[0] });
+	gui = GUIController.create();
 	
 	initForms();
 	initTools();	
 	initOpenImageFile();
 	initGUI();
-	window.init3dviewer();	// 3dfilebranch	
-	
-		
+	init3dviewer();	
+			
 });
 
 
@@ -126,9 +134,9 @@ $(function(){
 function initForms() {
 	
 	// append file open forms to the page
-	$(IME_TOOLS).append(
+	$tools.append(
 		"<form id=\"three-openfile\">" +																		
-			"<input id=\"inputfile-three\" class=\"input-sm\" type=\"file\" required=\"required\" multiple>" +
+			"<input id=\"inputfile-three\" class=\"input-sm\" type=\"file\" accept=\".obj\" required=\"required\" multiple>" +
 		"</form>"+		
 		"<form id=\"ime-openfile\">" +																				
 			"<input id=\"inputfile-image\" class=\"input-sm\" type=\"file\" accept=\"image/*\" required=\"required\" >" +
@@ -141,19 +149,23 @@ function initForms() {
 		.click(function(){
 				$("#inputfile-three").trigger("click");
 			})
-		.appendTo(IME_TOOLS)		 
-		.wrap("<li></li>");
-		
+		.appendTo($tools)		 
+		.wrap("<li></li>");		
 	
 	// create the Snapshot button	
-	$(FORM_BUTTON)
+	var $btnSnap = 	$(FORM_BUTTON)
 		.text("Snapshot")			
 		.click(function(){
-				ime.setImageSource(window.renderer.domElement.toDataURL());
+				ime.setImageSource(renderer.domElement.toDataURL());
 				$('html, body').animate({ scrollTop: window.innerHeight * 0.9 }, 1000);
 			})
-		.appendTo(IME_TOOLS)		 
+		.appendTo($tools)
+		.prop("disabled", true)		 
 		.wrap("<li></li>");
+		
+	window.addEventListener("three:render", () => {
+			$btnSnap.prop("disabled", false);
+	});
 	
 	// create the Open Image button
 	$(FORM_BUTTON)
@@ -161,7 +173,7 @@ function initForms() {
 		.click(function(){
 				$("#inputfile-image").trigger("click");
 			})
-		.appendTo(IME_TOOLS)		 
+		.appendTo($tools)		 
 		.wrap("<li></li>");		
 }
 
@@ -192,7 +204,7 @@ function initTools() {
 			})
 			
 		// append the button to the page	
-		.appendTo(IME_TOOLS)		 
+		.appendTo($tools)		 
 		.wrap("<li></li>");
 	
 	// link the button and tool
@@ -228,7 +240,7 @@ function initTools() {
 			})
 			
 		// append the button to the page		
-		.appendTo(IME_TOOLS)
+		.appendTo($tools)
 		.wrap("<li></li>");
 	
 	// link the button and the tool	
@@ -265,7 +277,7 @@ function initTools() {
 			})
 			
 		// append the button to the page		
-		.appendTo(IME_TOOLS)
+		.appendTo($tools)
 		.wrap("<li></li>");
 	
 	// link the button to the tool	
@@ -301,7 +313,7 @@ function initTools() {
 				"</ul>"
 			)
 		// append the settings to the page
-		.appendTo(IME_TOOLS);
+		.appendTo($tools);
 	
 	// link the button "apply" to the tool
 	$("#crop-settings-apply").click(() => crop.crop());
@@ -353,7 +365,7 @@ function initTools() {
 			})
 			
 		// append the button to the page			
-		.appendTo(IME_TOOLS)
+		.appendTo($tools)
 		.wrap("<li></li>");
 	
 	// link the button to the tool
@@ -380,7 +392,7 @@ function initTools() {
 				"</ul>"
 			)						
 		// append the settings to the page		
-		.appendTo(IME_TOOLS);
+		.appendTo($tools);
 	
 	// set inputs values
 	$("#grid-settings-rows").val(grid.getRows());
@@ -422,7 +434,7 @@ function initTools() {
 		.click(() => ime.restore())
 		
 		// append button to the page
-		.appendTo(IME_TOOLS)
+		.appendTo($tools)
 		.wrap("<li></li>");		
 	
 	// Zoom In	
@@ -447,7 +459,7 @@ function initTools() {
 		.append($btnZoomOut)
 		
 		// append element to the page
-		.appendTo(IME_TOOLS);		
+		.appendTo($tools);		
 }
 
 
@@ -459,8 +471,11 @@ function initOpenImageFile() {
 	// instantiate file reader
 	const reader = new FileReader();
 	
+	const $form = $("#ime-openfile");
+	const $input = $form.find("input");
+	
 	// form actions
-	$(IME_OPENFILE)
+	$form
 		.submit(function(e) {		
 				e.preventDefault();
 			})
@@ -470,7 +485,7 @@ function initOpenImageFile() {
 			gui.disableControls();
 			
 			// read file
-			reader.readAsDataURL($(IME_OPENFILE + " input")[0].files[0]);			
+			reader.readAsDataURL($input[0].files[0]);			
 		});
 	
 	// on file load
@@ -478,32 +493,31 @@ function initOpenImageFile() {
 		var dataURL = reader.result;
 		
 		// validate file type
-		if ($(IME_OPENFILE + " input")[0].files[0].type.substring(0, 5) == "image") {	  			
+		if ($input[0].files[0].type.substring(0, 5) == "image") {	  			
 			
 			// pass src to editor
 			ime.setImageSource(dataURL);
 		} else {
 			
-			console.warn("invalid file type");
+			console.warn("Image Editor error: invalid file type");
 			
-			// pass src to editor, displays warning image
-			ime.setImageSource("/static/invalid.jpg");
+			$error.text("Image Editor error: invalid file type");
+			
 		}
 		
 		// clear information about file from the form
-		$(IME_OPENFILE)[0].reset();		
+		$form[0].reset();		
 	}
 	
 	// on file load error
 	reader.onerror = function(){
 	
-		console.warn("file loading failed");
-		
-		// pass src to editor, displays warning image
-		ime.setImageSource("/static/invalid.jpg");
-		
+		console.warn("Image Editor error: can't load the file");
+				
+		$error.text("Image Editor error: can't load the file");
+				
 		// clear information about file from the form
-		$(IME_OPENFILE)[0].reset();
+		$form[0].reset();
 	}
 }
 
@@ -515,15 +529,15 @@ function initGUI() {
 	
 	// setup callbacks for enable/disable the controls
 	gui.disableControls = function(){
-		$(IME_TOOLS + " button.tool").prop("disabled", true);		
+		$tools.find("button.tool").prop("disabled", true);		
 	}
 
 	gui.enableControls = function(){
-		$(IME_TOOLS + " button.tool").prop("disabled", false);		
+		$tools.find("button.tool").prop("disabled", false);		
 	}
 	
 	// place canvas to page
-	$CANVAS.appendTo("#canvas-placeholder");
+	$canvas.appendTo("#canvas-placeholder");
 	
 	// enable controls when file loaded
 	ime.addEventListener("imageload", () => gui.enableControls());
@@ -531,7 +545,216 @@ function initGUI() {
 	// controls disabled by default
 	gui.disableControls();
 	
-	// set default image
-	//ime.setImageSource("/static/blank.jpg");
 }
+
+
+
+
+/**
+ *
+ * 3D VIEWER
+ *
+ * Modified version of:
+ *
+ * WebGL 3D Model Viewer Using three.js (https://github.com/Lorti/webgl-3d-model-viewer-using-three.js)
+ * Copyright (c) 2016 Manuel Wieser
+ * Licensed under MIT (https://github.com/Lorti/webgl-3d-model-viewer-using-three.js/blob/master/LICENSE)
+ */
+ 
+const THREE = window.THREE;
+
+var $threeOpenFile;
+var $threeInputFile;
+var $threePlaceholder;     
+
+var container;
+
+var camera, controls, scene, renderer;
+var lighting, ambient, keyLight, fillLight, backLight;
+
+var windowHalfX;
+var windowHalfY;
+
+var objFile;
+				
+
+function init3dviewer() {
+		
+		$threeOpenFile = $("#three-openfile");
+		$threeInputFile = $("#inputfile-three");
+		$threePlaceholder = $("#three-canvas-placeholder");
+		
+		
+		// check WEBGL support
+		if ( ! Detector.webgl) {
+			Detector.addGetWebGLMessage( { parent: $error[0] } );					
+			return;				
+		}				
+
+		var reader = new FileReader();
+		
+		$threeOpenFile
+				
+		.submit(function(e) {
+				
+				e.preventDefault();
+				
+			})
+													
+		.change(function(e) {
+									
+			reader.onload = function(){
+				
+				$threePlaceholder.empty();
+				
+				objFile = reader.result;
+				
+				init();
+				animate();
+				
+				// clear information about file from the form
+				$threeOpenFile[0].reset();						
+				
+			}
+			
+			reader.readAsText($threeInputFile[0].files[0]);
+						
+		});
+		
+		// on file load error
+		reader.onerror = function(){
+
+			console.warn("3d viewer: can't load the file");
+		
+			$error.text("3d viewer: can't load the file");
+		
+			// clear information about file from the form
+			$threeOpenFile[0].reset();
+		}	
+			
+ 		
+	function init() {
+	 	
+	 		// resize view on window resize
+			$(window).resize(function(){
+				$threePlaceholder.height(window.innerHeight * 0.9);
+			});
+
+			$threePlaceholder.height(window.innerHeight * 0.9);
+	 		
+	 		container = $threePlaceholder[0];
+			windowHalfX = container.left + container.offsetWidth / 2;
+	 		windowHalfY = container.top + container.offsetHeight / 2;
+
+		  camera = new THREE.PerspectiveCamera( 15, container.offsetWidth / container.offsetHeight, 1, 2000 );
+			camera.position.z = 1000;
+			camera.position.y = 100;
+		
+		
+			ambient = new THREE.AmbientLight(0xffffff, 0.4);        
+		
+			keyLight = new THREE.DirectionalLight(new THREE.Color('hsl(30, 30%, 75%)'), 0.9);
+		  keyLight.position.set(-500, 100, 100);
+
+		  fillLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 50%, 75%)'), 0.45);
+		  fillLight.position.set(500, 0, 100);
+
+		  backLight = new THREE.DirectionalLight(0xffffff, 0.5);
+		  backLight.position.set(500, 100, -500).normalize();
+		    
+
+			scene = new THREE.Scene();
+		
+			scene.add( ambient );
+			scene.add( keyLight );
+			scene.add( fillLight );
+			scene.add( backLight );
+			scene.add( camera );
+		  
+		  var manager = new THREE.LoadingManager();
+			manager.onProgress = function ( item, loaded, total ) {
+
+				console.log( item, loaded, total );
+
+			};
+
+			var textureLoader = new THREE.TextureLoader( manager );
+			var texture = textureLoader.load( '/3dviewer/obj/marble.jpg' );
+		  
+		  var mat = new THREE.MeshStandardMaterial( { color: 0xf3eedd, roughness: 0.08, metalness: 0.05 } );
+		  mat.map = texture;
+		  
+		  var object = new THREE.OBJLoader().parse( objFile );
+		
+						object.traverse( function ( child ) {
+
+							if ( child instanceof THREE.Mesh ) {
+
+								child.material = mat;
+
+							}
+
+						});
+					
+			scene.add( object );
+		
+
+		  /* Renderer */
+
+		  renderer = new THREE.WebGLRenderer({preserveDrawingBuffer: true});            
+		  renderer.setPixelRatio(window.devicePixelRatio);
+		  renderer.setSize(container.offsetWidth, container.offsetHeight);
+		  renderer.setClearColor(new THREE.Color("hsl(0, 0%, 30%)"));
+
+		  container.appendChild(renderer.domElement);
+
+		  /* Controls */
+
+		  controls = new THREE.OrbitControls(camera, renderer.domElement);
+		  controls.enableDamping = true;
+		  controls.dampingFactor = 0.25;
+		  controls.enableZoom = true;
+
+		  /* Events */
+
+		  window.addEventListener('resize', onWindowResize, false);
+	}
+
+
+	function onWindowResize() {
+
+		  windowHalfX = container.left + container.offsetWidth / 2;
+		  windowHalfY = container.top + container.offsetHeight / 2;
+
+		  camera.aspect = container.offsetWidth / container.offsetHeight;
+		  camera.updateProjectionMatrix();
+
+		  renderer.setSize(container.offsetWidth, container.offsetHeight);
+
+	}
+
+
+	function animate() {
+
+		  requestAnimationFrame(animate);
+
+		  controls.update();
+
+		  render();
+
+	}
+
+
+	function render() {
+
+		  renderer.render(scene, camera);
+		  
+		  // dispatch event to enable snapshot button
+		  window.dispatchEvent(new Event("three:render"));
+
+	}
+	
+}
+
+
 

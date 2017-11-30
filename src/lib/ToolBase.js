@@ -50,8 +50,8 @@ class ToolBase extends EventTarget {
 			
 		}		
 		
-		this.onActivate();
 		this._active = true;
+		this.onActivate();		
 		
 		this.dispatchEvent(new Event("activate"));
 				

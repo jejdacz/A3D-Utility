@@ -126,7 +126,9 @@ class Grid extends ToolBase{
 	
 	onChange() {
 	
-		this.dispatchEvent(new Event("change"));
+		if (this.isActive()) {
+			this.dispatchEvent(new Event("change"));
+		}
 		
 	}
 		
