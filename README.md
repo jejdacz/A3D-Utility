@@ -1,4 +1,4 @@
-#A3D Utility
+# A3D Utility
 CS50 final project
  
 This is a utility suitable for artists to make reference images from 3d models.
