@@ -149,8 +149,22 @@ function initForms() {
 		"<form id=\"ime-openfile\">" +																				
 			"<input id=\"inputfile-image\" class=\"input-sm\" type=\"file\" accept=\"image/*\" required=\"required\" >" +
 		"</form>"
-	);			
+	);
 	
+	// create help button
+	$(FORM_BUTTON)
+		.text("Help")		
+		// set the id for settings collapse control
+		.attr("data-target","#help-placeholder")
+		.attr("data-toggle","collapse")
+		.click(function(){
+				ime.setImageSource(renderer.domElement.toDataURL());
+				$('html, body').animate({ scrollTop: 0 }, 1000);
+			})		
+		// append the button to the page		
+		.appendTo($tools)
+		.wrap("<li></li>");		
+		
 	// create the Open 3d button - disabled, feature not implemented
 	$btn3d = $(FORM_BUTTON)
 		.text("Open 3D")
@@ -510,7 +524,7 @@ function initOpenImageFile() {
 			
 			console.warn("Image Editor error: invalid file type");
 			
-			$error.text("Image Editor error: invalid file type");
+			showError("Image Editor error: invalid file type");
 			
 		}
 		
@@ -523,7 +537,7 @@ function initOpenImageFile() {
 	
 		console.warn("Image Editor error: can't load the file");
 				
-		$error.text("Image Editor error: can't load the file");
+		showError("Image Editor error: can't load the file");
 				
 		// clear information about file from the form
 		$form[0].reset();
@@ -554,6 +568,17 @@ function initGUI() {
 	// controls disabled by default
 	gui.disableControls();
 	
+}
+
+
+/**
+ * Displays error message.
+ */ 
+function showError(message) {
+
+	$('html, body').animate({ scrollTop: 0 }, 1000);
+	$error.text(message);	
+
 }
 
 
@@ -627,7 +652,7 @@ function init3dviewer() {
 
 			console.warn("3d viewer: can't load the file");
 		
-			$error.text("3d viewer: can't load the file");
+			showError("3d viewer: can't load the file");
 		
 			// clear information about file from the form
 			$form[0].reset();

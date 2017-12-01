@@ -40,20 +40,56 @@
         <!-- /#sidebar-wrapper -->
 
         <!-- Page Content -->
-        <div id="page-content-wrapper">            	        		
+        <div id="page-content-wrapper">
+                    	        		
        			<div class="container-fluid">            	
-            	<div id="three-canvas-placeholder">
-            		<a href="/3dviewer/obj/Cas-Sum_Man_RtStand_366.obj">Download sample 3D model.</a>
-            	</div>   
+            	<div id="error-placeholder"></div> 
             </div>
             
             <div class="container-fluid">            	
-            	<div id="error-placeholder"></div>   
+            	<div id="help-placeholder" class="collapse">						
+*	HELP
+*
+*	3DVIEWER:
+*		Supported file format of 3d object is .obj.
+*		Use mouse to control rotation/zoom/pan.
+*		
+*	Make a snapshot of the scene by the "Snapshot" button.
+*	The image will be displayed in the Image editor screen right below the 3dviewer screen. Scroll down to see it.
+*
+*	IMAGE EDITOR:
+*		Use the snapshot or open an image file from local filesystem.
+*		
+*		Cursor tool:
+*			Does nothing. Suitable when saving the image.
+*
+*		Meter tool:
+*			Measures a distance in pixels on the image editor screen.
+*
+*		Crop tool:
+*			Crops the image to the selection.
+*
+*		Grid tool:
+*			Displays the grid over the image editor screen.
+*
+*		Restore:
+*			Restores the image to the state when it was loaded.
+*
+*		Zoom + / - :
+*			Resizes the image.
+            	</div> 
+            </div>
+       			
+       			<div class="container-fluid">            	
+            	<div id="three-canvas-placeholder">
+            		<a href="/3dviewer/obj/Cas-Sum_Man_RtStand_366.obj">Download a sample 3D model.</a>
+            	</div>   
             </div>
             
             <div class="container-fluid">                
             	<div id="canvas-placeholder"></div>   
             </div>
+            
         </div>
         <!-- /#page-content-wrapper -->
 
