@@ -9,7 +9,7 @@ This is a utility suitable for artists to make reference images from 3d models.
 5. Save the image by right-mouse-button click on the image editor screen.
 
 ## Usage:
-Run the utility on a local	http server, e.g. Python server. 
+Run the utility on a local http server, e.g. Python server. 
 
 	//for python 3.x
  	python -m http.server
@@ -53,7 +53,6 @@ Licensed under MIT (https://github.com/Lorti/webgl-3d-model-viewer-using-three.j
 JavaScript 3D library (https://github.com/mrdoob/three.js)
 Copyright © 2010-2016 three.js authors
 Licensed under MIT (https://github.com/mrdoob/three.js/blob/master/LICENSE)
-
 
 ##### Base for main page design
 Start Bootstrap - Simple Sidebar (https://startbootstrap.com/template-overviews/simple-sidebar)
