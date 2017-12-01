@@ -1,5 +1,5 @@
 #A3D Utility
-* CS50 final project
+CS50 final project
  
 This is a utility suitable for artists to make reference images from 3d models.
 1. Adjust the camera on the 3d scene.
@@ -38,9 +38,7 @@ Run the utility on a local	http server, e.g. Python server.
  	python -m http.server
 
 ### 3dviewer:
-* supported file format of 3d object is .obj
-		
-* On the page viewer's screen fills the rest of the browser's window next to the side bar.
+* Supported file format of 3d object is .obj.
 * Use mouse to control rotation/zoom/pan. Screen is adjusted when the window is resized.
 		
 Make a snapshot of the scene by the "Snapshot" button.
