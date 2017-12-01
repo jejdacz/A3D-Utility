@@ -7,24 +7,21 @@ This is a utility suitable for artists to make reference images from 3d models.
 3. Crop and resize the snapshot.
 4. Draw the grid over the image.
 5. Save the image by right-mouse-button click on the image editor screen.
- 
-@author Marek Mego
-(c) 2017
 
-###### Copyrights of the parts used in this utility:
+##### Copyrights of the parts used in this utility:
 
-###### Base for 3D viewer
+##### Base for 3D viewer
 WebGL 3D Model Viewer Using three.js (https://github.com/Lorti/webgl-3d-model-viewer-using-three.js)
 Copyright (c) 2016 Manuel Wieser
 Licensed under MIT (https://github.com/Lorti/webgl-3d-model-viewer-using-three.js/blob/master/LICENSE) 
 
-###### Base for 3D viewer
+##### Base for 3D viewer
 JavaScript 3D library (https://github.com/mrdoob/three.js)
 Copyright © 2010-2016 three.js authors
 Licensed under MIT (https://github.com/mrdoob/three.js/blob/master/LICENSE)
 
 
-###### Base for main page design
+##### Base for main page design
 Start Bootstrap - Simple Sidebar (https://startbootstrap.com/template-overviews/simple-sidebar)
 Copyright 2013-2017 Start Bootstrap
 Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-simple-sidebar/blob/master/LICENSE)
