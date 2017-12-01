@@ -1,5 +1,5 @@
 #A3D Utility
-	CS50 final project
+* CS50 final project
  
 This is a utility suitable for artists to make reference images from 3d models.
 1. Adjust the camera on the 3d scene.
@@ -34,35 +34,35 @@ Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-simple-si
 ## Usage:
 Run the utility on a local	http server, e.g. Python server. 
 
-	for python 3.x
+	//for python 3.x
  	python -m http.server
 
 ### 3dviewer:
- 	supported file format of 3d object is .obj
+* supported file format of 3d object is .obj
 		
-	On the page viewer's screen fills the rest of the browser's window next to the side bar.
-	Use mouse to control rotation/zoom/pan. Screen is adjusted when the window is resized.
+* On the page viewer's screen fills the rest of the browser's window next to the side bar.
+* Use mouse to control rotation/zoom/pan. Screen is adjusted when the window is resized.
 		
 Make a snapshot of the scene by the "Snapshot" button.
 The image will be displayed in the Image editor screen right below the 3dviewer screen. Scroll down to see it.
 
 ### Image editor:
-	Use the snapshot or open an image file from local filesystem.
+* Use the snapshot or open an image file from local filesystem.
 		
 #### Cursor tool:
-	Does nothing. Suitable when saving the image.
+* Does nothing. Suitable when saving the image.
 
 #### Meter tool:
-	Measures a distance in pixels on the image editor screen.
+* Measures a distance in pixels on the image editor screen.
 
 #### Crop tool:
-	Crops the image to the selection.
+* Crops the image to the selection.
 
 #### Grid tool:
-	Displays the grid over the image editor screen.
+* Displays the grid over the image editor screen.
 
 #### Restore:
-	Restores the image to the state when it was loaded.
+* Restores the image to the state when it was loaded.
 
 #### Zoom + / - :
-	Resizes the image.
+* Resizes the image.
