@@ -44,8 +44,7 @@ input[type="color"] {
   list-style: none;  
 }
 
-#three-canvas-placeholder {	
-	width:100%;		
+#three-canvas-placeholder {				
 	display:block;
 	margin-bottom:20px;
 }
@@ -55,9 +54,19 @@ input[type="color"] {
 }
 
 #error-placeholder {
+	position:fixed;
+	top:0;
+	padding:20px;	
+	margin-left: auto;
+  margin-right: auto;
+	text-align:center;
+	z-index:100;
+	cursor: pointer; 
 	font-size: 16px;
 	font-weight: 800;
 	color: white;
+	opacity: 0.0;
+	background-color:rgba(255, 0, 0, .5);
 	text-shadow: 1px 2px 2px rgba(0, 0, 0, .5);
 }
 

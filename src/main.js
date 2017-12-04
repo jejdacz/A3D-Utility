@@ -197,7 +197,12 @@ function initForms() {
 				$("#inputfile-image").trigger("click");
 			})
 		.appendTo($tools)		 
-		.wrap("<li></li>");		
+		.wrap("<li></li>");
+	
+	$error.click(function() {
+		clearError();
+	});
+			
 }
 
 
@@ -576,8 +581,36 @@ function initGUI() {
  */ 
 function showError(message) {
 
-	$('html, body').animate({ scrollTop: 0 }, 1000);
+	$error.animate({ opacity: 1.0 }, 1000);
+	$error.css("display", "block");	
 	$error.text(message);	
+
+}
+
+/**
+ * Clears error message.
+ */ 
+function clearError(message) {
+	
+	$error.animate(
+		{	opacity: 0.0 },
+		1000,
+		"linear",
+		function() {
+			$error.css("display", "none");
+			$error.empty();
+		},		
+	);
+	
+}
+
+/**
+ * Position error message.
+ */ 
+function posError(message) {
+		
+	$error.css("display", "none");
+	$error.empty();
 
 }
 
@@ -593,7 +626,7 @@ function showError(message) {
 var camera, controls, scene, renderer;
 var lighting, ambient, keyLight, fillLight, backLight;
 
-var objFile; 
+var object; 
 
 function init3dviewer() {
 		
@@ -631,12 +664,29 @@ function init3dviewer() {
 									
 			reader.onload = function(){
 				
-				$threePlaceholder.empty();
+				$threePlaceholder.empty();				
 				
-				objFile = reader.result;
+				try {
+		  	  
+		  	object = new THREE.OBJLoader().parse( reader.result );
+		  			  	
+				}			  	  
+				catch (e) {
+					
+					console.warn("3d viewer: can't parse the file");
+		
+					showError("3d viewer: can't parse the file");
 				
-				init();
-				animate();
+					object = undefined;
+				
+				}
+				
+				if ( object ) {
+				
+					init();
+					animate();
+					
+				}
 				
 				// clear information about file from the form
 				$form[0].reset();						
@@ -711,17 +761,15 @@ function init3dviewer() {
 		  var mat = new THREE.MeshStandardMaterial( { color: 0xf3eedd, roughness: 0.08, metalness: 0.05 } );
 		  mat.map = texture;
 		  
-		  var object = new THREE.OBJLoader().parse( objFile );
-		
-						object.traverse( function ( child ) {
+		  object.traverse( function ( child ) {
 
-							if ( child instanceof THREE.Mesh ) {
+				if ( child instanceof THREE.Mesh ) {
 
-								child.material = mat;
+					child.material = mat;
 
-							}
+				}
 
-						});
+			});
 					
 			object.position.y = -90;
 			scene.add( object );
