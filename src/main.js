@@ -198,11 +198,7 @@ function initForms() {
 			})
 		.appendTo($tools)		 
 		.wrap("<li></li>");
-	
-	$error.click(function() {
-		clearError();
-	});
-			
+					
 }
 
 
@@ -573,6 +569,11 @@ function initGUI() {
 	// controls disabled by default
 	gui.disableControls();
 	
+	// clears error 
+	$error.click(function() {
+		clearError();
+	});
+	
 }
 
 
@@ -583,7 +584,7 @@ function showError(message) {
 
 	$error.animate({ opacity: 1.0 }, 1000);
 	$error.css("display", "block");	
-	$error.text(message);	
+	$error.html(message);	
 
 }
 
@@ -605,19 +606,6 @@ function clearError(message) {
 }
 
 /**
- * Position error message.
- */ 
-function posError(message) {
-		
-	$error.css("display", "none");
-	$error.empty();
-
-}
-
-
-
-
-/**
  *
  * 3D VIEWER
  *
@@ -629,8 +617,7 @@ var lighting, ambient, keyLight, fillLight, backLight;
 var object; 
 
 function init3dviewer() {
-		
-		
+				
 		const THREE = window.THREE;
 				
 		var container;
@@ -644,15 +631,31 @@ function init3dviewer() {
 				
 		// check WEBGL support
 		if ( ! Detector.webgl) {
-			Detector.addGetWebGLMessage( { parent: $error[0] } );
+			
+			// helper element
+			var $element = $("<div></div>");
+			
+			// get error message
+			Detector.addGetWebGLMessage( { parent: $element[0] } );
+			
+			// show error message			
+			showError($element.html());
+			
+			// disable open file button
 			$btn3d.prop("disabled", true);					
-			return;				
+			
+			// abort init
+			return;	
+						
 		}
 		
+		// enable open file button
 		$btn3d.prop("disabled", false);				
-
+		
+		// create file reader
 		var reader = new FileReader();
 		
+		// open file form setup
 		$form				
 		.submit(function(e) {
 				
@@ -664,8 +667,10 @@ function init3dviewer() {
 									
 			reader.onload = function(){
 				
+				// clear screen
 				$threePlaceholder.empty();				
 				
+				// parse file
 				try {
 		  	  
 		  	object = new THREE.OBJLoader().parse( reader.result );
@@ -673,6 +678,7 @@ function init3dviewer() {
 				}			  	  
 				catch (e) {
 					
+					// show error
 					console.warn("3d viewer: can't parse the file");
 		
 					showError("3d viewer: can't parse the file");
@@ -681,6 +687,7 @@ function init3dviewer() {
 				
 				}
 				
+				// init scene if object is defined
 				if ( object ) {
 				
 					init();
@@ -693,6 +700,7 @@ function init3dviewer() {
 				
 			}
 			
+			// read data from .obj file as text
 			reader.readAsText($threeInputFile[0].files[0]);
 						
 		});
